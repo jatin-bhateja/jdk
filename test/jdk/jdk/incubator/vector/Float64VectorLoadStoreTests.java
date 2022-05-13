@@ -23,7 +23,8 @@
 
 /*
  * @test
- * @modules jdk.incubator.foreign jdk.incubator.vector java.base/jdk.internal.vm.annotation
+ * @enablePreview
+ * @modules jdk.incubator.vector java.base/jdk.internal.vm.annotation
  * @run testng/othervm -XX:-TieredCompilation Float64VectorLoadStoreTests
  *
  */

@@ -26,9 +26,9 @@ package org.openjdk.bench.jdk.incubator.vector;
 import java.nio.ByteOrder;
 import java.util.concurrent.TimeUnit;
 
-import jdk.incubator.foreign.MemoryAddress;
-import jdk.incubator.foreign.MemorySegment;
-import jdk.incubator.foreign.ResourceScope;
+import java.lang.foreign.MemoryAddress;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.MemorySession;
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorOperators;
 import jdk.incubator.vector.VectorSpecies;
@@ -51,7 +51,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(org.openjdk.jmh.annotations.Scope.Thread)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Fork(value = 1, jvmArgsAppend = {
-    "--add-modules=jdk.incubator.foreign,jdk.incubator.vector",
+    "--add-modules=jdk.incubator.vector",
     "-Dforeign.restricted=permit",
     "--enable-native-access", "ALL-UNNAMED"})
 public class TestLoadStoreShorts {
@@ -72,7 +72,7 @@ public class TestLoadStoreShorts {
   private MemorySegment dstSegmentHeap;
 
 
-  private ResourceScope implicitScope;
+  private MemorySession implicitScope;
 
   private MemorySegment srcSegment;
 
@@ -101,8 +101,20 @@ public class TestLoadStoreShorts {
     srcSegment = MemorySegment.allocateNative(size, SPECIES.vectorByteSize(), implicitScope);
     dstSegment = MemorySegment.allocateNative(size, SPECIES.vectorByteSize(), implicitScope);
 
+<<<<<<< HEAD:test/micro/org/openjdk/bench/jdk/incubator/vector/TestLoadStoreShorts.java
     srcAddress = srcSegment.address();
     dstAddress = dstSegment.address();
+=======
+    implicitScope = MemorySession.openShared();
+    srcSegmentImplicit = MemorySegment.allocateNative(size, SPECIES.vectorByteSize(), implicitScope);
+    srcBufferSegmentImplicit = srcSegmentImplicit.asByteBuffer();
+    dstSegmentImplicit = MemorySegment.allocateNative(size, SPECIES.vectorByteSize(), implicitScope);
+    dstBufferSegmentImplicit = dstSegmentImplicit.asByteBuffer();
+
+
+    srcAddress = MemorySegment.allocateNative(size, implicitScope).address();
+    dstAddress = MemorySegment.allocateNative(size, implicitScope).address();
+>>>>>>> master:test/micro/org/openjdk/bench/jdk/incubator/vector/TestLoadStoreShort.java
 
     this.longSize = longSize;
 
@@ -171,10 +183,17 @@ public class TestLoadStoreShorts {
   }
 
   @Benchmark
+<<<<<<< HEAD:test/micro/org/openjdk/bench/jdk/incubator/vector/TestLoadStoreShorts.java
   public void segmentNativeConfined() {
     try (final var scope = ResourceScope.newConfinedScope()) {
       final var srcSegmentConfined = MemorySegment.ofAddress(srcAddress, size, scope);
       final var dstSegmentConfined = MemorySegment.ofAddress(dstAddress, size, scope);
+=======
+  public void bufferSegmentConfined() {
+    try (final var scope = MemorySession.openConfined()) {
+      final var srcBufferSegmentConfined = MemorySegment.ofAddress(srcAddress, size, scope).asByteBuffer();
+      final var dstBufferSegmentConfined = MemorySegment.ofAddress(dstAddress, size, scope).asByteBuffer();
+>>>>>>> master:test/micro/org/openjdk/bench/jdk/incubator/vector/TestLoadStoreShort.java
 
       for (long i = 0; i < SPECIES.loopBound(srcArray.length); i += SPECIES.length()) {
         var v = ShortVector.fromMemorySegment(SPECIES, srcSegmentConfined, i, ByteOrder.nativeOrder());
