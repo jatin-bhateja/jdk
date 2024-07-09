@@ -268,6 +268,25 @@ int VectorNode::opcode(int sopc, BasicType bt) {
   case Op_SignumD:
     return Op_SignumVD;
 
+  case Op_UMinI:
+  case Op_UMinL:
+    switch(bt) {
+    case T_BYTE:
+    case T_SHORT:
+    case T_INT:
+    case T_LONG: return Op_UMinV;
+    default: return 0;
+    }
+
+  case Op_UMaxI:
+  case Op_UMaxL:
+    switch(bt) {
+    case T_BYTE:
+    case T_SHORT:
+    case T_INT:
+    case T_LONG: return Op_UMaxV;
+    default: return 0;
+    }
   default:
     assert(!VectorNode::is_convert_opcode(sopc),
            "Convert node %s should be processed by VectorCastNode::opcode()",
@@ -739,6 +758,9 @@ VectorNode* VectorNode::make(int vopc, Node* n1, Node* n2, const TypeVect* vt, b
   case Op_RShiftVI: return new RShiftVINode(n1, n2, vt, is_var_shift);
   case Op_RShiftVL: return new RShiftVLNode(n1, n2, vt, is_var_shift);
 
+  case Op_UMinV: return new UMinVNode(n1, n2, vt);
+  case Op_UMaxV: return new UMaxVNode(n1, n2, vt);
+
   case Op_URShiftVB: return new URShiftVBNode(n1, n2, vt, is_var_shift);
   case Op_URShiftVS: return new URShiftVSNode(n1, n2, vt, is_var_shift);
   case Op_URShiftVI: return new URShiftVINode(n1, n2, vt, is_var_shift);
@@ -779,6 +801,7 @@ VectorNode* VectorNode::make(int vopc, Node* n1, Node* n2, Node* n3, const TypeV
   // This method should not be called for unimplemented vectors.
   guarantee(vopc > 0, "vopc must be > 0");
   switch (vopc) {
+  case Op_SelectFromTwoVector: return new SelectFromTwoVectorNode(n1, n2, n3, vt);
   case Op_FmaVD: return new FmaVDNode(n1, n2, n3, vt);
   case Op_FmaVF: return new FmaVFNode(n1, n2, n3, vt);
   case Op_SignumVD: return new SignumVDNode(n1, n2, n3, vt);

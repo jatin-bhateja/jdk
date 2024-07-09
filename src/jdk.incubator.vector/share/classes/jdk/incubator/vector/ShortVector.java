@@ -871,6 +871,18 @@ public abstract class ShortVector extends AbstractVector<Short> {
                     v0.bOp(v1, vm, (i, a, n) -> rotateLeft(a, (int)n));
             case VECTOR_OP_RROTATE: return (v0, v1, vm) ->
                     v0.bOp(v1, vm, (i, a, n) -> rotateRight(a, (int)n));
+            case VECTOR_OP_UMAX: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (short)Short.umax(a, b));
+            case VECTOR_OP_UMIN: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (short)Short.umin(a, b));
+            case VECTOR_OP_SATURATING_ADD: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (short)(Short.saturatingAdd(a, b)));
+            case VECTOR_OP_SATURATING_SUB: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (short)(Short.saturatingSub(a, b)));
+            case VECTOR_OP_SATURATING_UADD: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (short)(Short.saturatingUnsignedAdd(a, b)));
+            case VECTOR_OP_SATURATING_USUB: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (short)(Short.saturatingUnsignedSub(a, b)));
             default: return null;
         }
     }
@@ -2567,6 +2579,33 @@ public abstract class ShortVector extends AbstractVector<Short> {
     final ShortVector selectFromTemplate(ShortVector v,
                                                   AbstractMask<Short> m) {
         return v.rearrange(this.toShuffle(), m);
+    }
+
+    private static
+    IndexOutOfBoundsException checkIndexFailed(Vector<?> vix, int length) {
+        String msg = String.format("Range check failed: vector %s out of bounds for length %d", vix, length);
+        return new IndexOutOfBoundsException(msg);
+    }
+
+    /**
+     * {@inheritDoc} <!--workaround-->
+     */
+    @Override
+    public abstract
+    ShortVector selectFrom(Vector<Short> v1, Vector<Short> v2);
+
+    /*package-private*/
+    @ForceInline
+    final ShortVector selectFromTemplate(ShortVector v1, ShortVector v2) {
+        int twovectorlen = length() * 2;
+        if (this.compare(VectorOperators.UNSIGNED_GT, twovectorlen - 1).anyTrue()) {
+            throw checkIndexFailed(this, twovectorlen);
+        }
+        return (ShortVector)VectorSupport.selectFromTwoVectorOp(getClass(), short.class, length(), this, v1, v2,
+            (vec1, vec2, vec3) -> {
+                return vec2.rearrange(vec1.toShuffle(), vec3);
+            }
+        );
     }
 
     /// Ternary operations

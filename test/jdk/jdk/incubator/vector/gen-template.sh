@@ -460,6 +460,12 @@ gen_shift_cst_op  "ROL" "ROL_scalar(a, CONST_SHIFT)" "BITWISE"
 # Masked reductions.
 gen_binary_op_no_masked "MIN+min" "Math.min(a, b)"
 gen_binary_op_no_masked "MAX+max" "Math.max(a, b)"
+gen_binary_op "UMIN" "\$Wideboxtype\$.umin(a, b)" "BITWISE"
+gen_binary_op "UMAX" "\$Wideboxtype\$.umax(a, b)" "BITWISE"
+gen_binary_op "SATURATING_ADD" "\$Wideboxtype\$.saturatingAdd(a, b)" "BITWISE"
+gen_binary_op "SATURATING_SUB" "\$Wideboxtype\$.saturatingSub(a, b)" "BITWISE"
+gen_binary_op "SATURATING_UADD" "\$Wideboxtype\$.saturatingUnsignedAdd(a, b)" "BITWISE"
+gen_binary_op "SATURATING_USUB" "\$Wideboxtype\$.saturatingUnsignedSub(a, b)" "BITWISE"
 gen_binary_bcst_op_no_masked "MIN+min" "Math.min(a, b)"
 gen_binary_bcst_op_no_masked "MAX+max" "Math.max(a, b)"
 

@@ -144,12 +144,29 @@ class VectorNode : public TypeNode {
 };
 
 //===========================Vector=ALU=Operations=============================
+class SaturatingVectorNode : public VectorNode {
+ private:
+  bool _is_unsigned;
+
+ public:
+  SaturatingVectorNode(Node* in1, Node* in2, const TypeVect* vt, bool is_unsigned) : VectorNode(in1, in2, vt), _is_unsigned(is_unsigned) {}
+
+  // Needed for proper cloning.
+  virtual uint size_of() const { return sizeof(*this); }
+  bool is_unsigned() { return _is_unsigned; }
+};
 
 //------------------------------AddVBNode--------------------------------------
 // Vector add byte
 class AddVBNode : public VectorNode {
  public:
   AddVBNode(Node* in1, Node* in2, const TypeVect* vt) : VectorNode(in1,in2,vt) {}
+  virtual int Opcode() const;
+};
+
+class SaturatingAddVBNode : public SaturatingVectorNode {
+ public:
+  SaturatingAddVBNode(Node* in1, Node* in2, const TypeVect* vt, bool is_unsigned) : SaturatingVectorNode(in1,in2,vt,is_unsigned) {}
   virtual int Opcode() const;
 };
 
@@ -161,6 +178,13 @@ class AddVSNode : public VectorNode {
   virtual int Opcode() const;
 };
 
+class SaturatingAddVSNode : public SaturatingVectorNode {
+ public:
+  SaturatingAddVSNode(Node* in1, Node* in2, const TypeVect* vt, bool is_unsigned) : SaturatingVectorNode(in1,in2,vt,is_unsigned) {}
+  virtual int Opcode() const;
+};
+
+
 //------------------------------AddVINode--------------------------------------
 // Vector add int
 class AddVINode : public VectorNode {
@@ -169,11 +193,23 @@ class AddVINode : public VectorNode {
   virtual int Opcode() const;
 };
 
+class SaturatingAddVINode : public SaturatingVectorNode {
+ public:
+  SaturatingAddVINode(Node* in1, Node* in2, const TypeVect* vt, bool is_unsigned) : SaturatingVectorNode(in1,in2,vt,is_unsigned) {}
+  virtual int Opcode() const;
+};
+
 //------------------------------AddVLNode--------------------------------------
 // Vector add long
 class AddVLNode : public VectorNode {
 public:
   AddVLNode(Node* in1, Node* in2, const TypeVect* vt) : VectorNode(in1, in2, vt) {}
+  virtual int Opcode() const;
+};
+
+class SaturatingAddVLNode : public SaturatingVectorNode {
+ public:
+  SaturatingAddVLNode(Node* in1, Node* in2, const TypeVect* vt, bool is_unsigned) : SaturatingVectorNode(in1,in2,vt,is_unsigned) {}
   virtual int Opcode() const;
 };
 
@@ -331,11 +367,23 @@ class SubVBNode : public VectorNode {
   virtual int Opcode() const;
 };
 
+class SaturatingSubVBNode : public SaturatingVectorNode {
+ public:
+  SaturatingSubVBNode(Node* in1, Node* in2, const TypeVect* vt, bool is_unsigned) : SaturatingVectorNode(in1,in2,vt,is_unsigned) {}
+  virtual int Opcode() const;
+};
+
 //------------------------------SubVSNode--------------------------------------
 // Vector subtract short
 class SubVSNode : public VectorNode {
  public:
   SubVSNode(Node* in1, Node* in2, const TypeVect* vt) : VectorNode(in1,in2,vt) {}
+  virtual int Opcode() const;
+};
+
+class SaturatingSubVSNode : public SaturatingVectorNode {
+ public:
+  SaturatingSubVSNode(Node* in1, Node* in2, const TypeVect* vt, bool is_unsigned) : SaturatingVectorNode(in1,in2,vt,is_unsigned) {}
   virtual int Opcode() const;
 };
 
@@ -347,11 +395,23 @@ class SubVINode : public VectorNode {
   virtual int Opcode() const;
 };
 
+class SaturatingSubVINode : public SaturatingVectorNode {
+ public:
+  SaturatingSubVINode(Node* in1, Node* in2, const TypeVect* vt, bool is_unsigned) : SaturatingVectorNode(in1,in2,vt,is_unsigned) {}
+  virtual int Opcode() const;
+};
+
 //------------------------------SubVLNode--------------------------------------
 // Vector subtract long
 class SubVLNode : public VectorNode {
  public:
   SubVLNode(Node* in1, Node* in2, const TypeVect* vt) : VectorNode(in1,in2,vt) {}
+  virtual int Opcode() const;
+};
+
+class SaturatingSubVLNode : public SaturatingVectorNode {
+ public:
+  SaturatingSubVLNode(Node* in1, Node* in2, const TypeVect* vt, bool is_unsigned) : SaturatingVectorNode(in1,in2,vt,is_unsigned) {}
   virtual int Opcode() const;
 };
 
@@ -561,11 +621,27 @@ public:
   virtual int Opcode() const;
 };
 
+class UMinVNode : public VectorNode {
+ public:
+  UMinVNode(Node* in1, Node* in2, const TypeVect* vt) : VectorNode(in1,in2,vt) {
+    assert(is_integral_type(vt->element_basic_type()), "");
+  }
+  virtual int Opcode() const;
+};
+
 //------------------------------MaxVNode--------------------------------------
 // Vector Max
 class MaxVNode : public VectorNode {
  public:
   MaxVNode(Node* in1, Node* in2, const TypeVect* vt) : VectorNode(in1, in2, vt) {}
+  virtual int Opcode() const;
+};
+
+class UMaxVNode : public VectorNode {
+ public:
+  UMaxVNode(Node* in1, Node* in2, const TypeVect* vt) : VectorNode(in1,in2,vt) {
+    assert(is_integral_type(vt->element_basic_type()), "");
+  }
   virtual int Opcode() const;
 };
 
@@ -1610,6 +1686,14 @@ class VectorRearrangeNode : public VectorNode {
   virtual int Opcode() const;
   Node* vec1() const { return in(1); }
   Node* vec_shuffle() const { return in(2); }
+};
+
+class SelectFromTwoVectorNode : public VectorNode {
+public:
+  SelectFromTwoVectorNode(Node* in1, Node* in2, Node* in3, const TypeVect* vt)
+  : VectorNode(in1, in2, in3, vt) {}
+
+  virtual int Opcode() const;
 };
 
 class VectorLoadShuffleNode : public VectorNode {

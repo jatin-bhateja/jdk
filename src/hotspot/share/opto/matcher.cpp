@@ -2400,6 +2400,7 @@ void Matcher::find_shared_post_visit(Node* n, uint opcode) {
       n->del_req(4);
       break;
     }
+    case Op_SelectFromTwoVector:
     case Op_LoopLimit: {
       Node* pair1 = new BinaryNode(n->in(1), n->in(2));
       n->set_req(1, pair1);
@@ -2426,6 +2427,7 @@ void Matcher::find_shared_post_visit(Node* n, uint opcode) {
       n->del_req(4);
       break;
     }
+
     case Op_EncodeISOArray:
     case Op_StrCompressedCopy:
     case Op_StrInflatedCopy: {
@@ -2435,6 +2437,7 @@ void Matcher::find_shared_post_visit(Node* n, uint opcode) {
       n->del_req(4);
       break;
     }
+
     case Op_FmaD:
     case Op_FmaF:
     case Op_FmaVD:

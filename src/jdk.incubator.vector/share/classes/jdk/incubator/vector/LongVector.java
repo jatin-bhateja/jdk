@@ -829,6 +829,18 @@ public abstract class LongVector extends AbstractVector<Long> {
                     v0.bOp(v1, vm, (i, a, n) -> rotateLeft(a, (int)n));
             case VECTOR_OP_RROTATE: return (v0, v1, vm) ->
                     v0.bOp(v1, vm, (i, a, n) -> rotateRight(a, (int)n));
+            case VECTOR_OP_UMAX: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (long)Long.umax(a, b));
+            case VECTOR_OP_UMIN: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (long)Long.umin(a, b));
+            case VECTOR_OP_SATURATING_ADD: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (long)(Long.saturatingAdd(a, b)));
+            case VECTOR_OP_SATURATING_SUB: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (long)(Long.saturatingSub(a, b)));
+            case VECTOR_OP_SATURATING_UADD: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (long)(Long.saturatingUnsignedAdd(a, b)));
+            case VECTOR_OP_SATURATING_USUB: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (long)(Long.saturatingUnsignedSub(a, b)));
             case VECTOR_OP_COMPRESS_BITS: return (v0, v1, vm) ->
                     v0.bOp(v1, vm, (i, a, n) -> Long.compress(a, n));
             case VECTOR_OP_EXPAND_BITS: return (v0, v1, vm) ->
@@ -2417,6 +2429,33 @@ public abstract class LongVector extends AbstractVector<Long> {
     final LongVector selectFromTemplate(LongVector v,
                                                   AbstractMask<Long> m) {
         return v.rearrange(this.toShuffle(), m);
+    }
+
+    private static
+    IndexOutOfBoundsException checkIndexFailed(Vector<?> vix, int length) {
+        String msg = String.format("Range check failed: vector %s out of bounds for length %d", vix, length);
+        return new IndexOutOfBoundsException(msg);
+    }
+
+    /**
+     * {@inheritDoc} <!--workaround-->
+     */
+    @Override
+    public abstract
+    LongVector selectFrom(Vector<Long> v1, Vector<Long> v2);
+
+    /*package-private*/
+    @ForceInline
+    final LongVector selectFromTemplate(LongVector v1, LongVector v2) {
+        int twovectorlen = length() * 2;
+        if (this.compare(VectorOperators.UNSIGNED_GT, twovectorlen - 1).anyTrue()) {
+            throw checkIndexFailed(this, twovectorlen);
+        }
+        return (LongVector)VectorSupport.selectFromTwoVectorOp(getClass(), long.class, length(), this, v1, v2,
+            (vec1, vec2, vec3) -> {
+                return vec2.rearrange(vec1.toShuffle(), vec3);
+            }
+        );
     }
 
     /// Ternary operations

@@ -903,6 +903,52 @@ void C2_MacroAssembler::pminmax(int opcode, BasicType elem_bt, XMMRegister dst, 
   }
 }
 
+void C2_MacroAssembler::vpuminmax(int opcode, BasicType elem_bt, XMMRegister dst,
+                                  XMMRegister src1, Address src2, int vlen_enc) {
+  assert(opcode == Op_UMinV || opcode == Op_UMaxV, "sanity");
+  if (opcode == Op_UMinV) {
+    switch(elem_bt) {
+      case T_BYTE:  vpminub(dst, src1, src2, vlen_enc); break;
+      case T_SHORT: vpminuw(dst, src1, src2, vlen_enc); break;
+      case T_INT:   vpminud(dst, src1, src2, vlen_enc); break;
+      case T_LONG:  evpminuq(dst, k0, src1, src2, false, vlen_enc); break;
+      default: fatal("Unsupported type %s", type2name(elem_bt)); break;
+    }
+  } else {
+    assert(opcode == Op_UMaxV, "required");
+    switch(elem_bt) {
+      case T_BYTE:  vpmaxub(dst, src1, src2, vlen_enc); break;
+      case T_SHORT: vpmaxuw(dst, src1, src2, vlen_enc); break;
+      case T_INT:   vpmaxud(dst, src1, src2, vlen_enc); break;
+      case T_LONG:  evpmaxuq(dst, k0, src1, src2, false, vlen_enc); break;
+      default: fatal("Unsupported type %s", type2name(elem_bt)); break;
+    }
+  }
+}
+
+void C2_MacroAssembler::vpuminmax(int opcode, BasicType elem_bt, XMMRegister dst,
+                                  XMMRegister src1, XMMRegister src2, int vlen_enc) {
+  assert(opcode == Op_UMinV || opcode == Op_UMaxV, "sanity");
+  if (opcode == Op_UMinV) {
+    switch(elem_bt) {
+      case T_BYTE:  vpminub(dst, src1, src2, vlen_enc); break;
+      case T_SHORT: vpminuw(dst, src1, src2, vlen_enc); break;
+      case T_INT:   vpminud(dst, src1, src2, vlen_enc); break;
+      case T_LONG:  evpminuq(dst, k0, src1, src2, false, vlen_enc); break;
+      default: fatal("Unsupported type %s", type2name(elem_bt)); break;
+    }
+  } else {
+    assert(opcode == Op_UMaxV, "required");
+    switch(elem_bt) {
+      case T_BYTE:  vpmaxub(dst, src1, src2, vlen_enc); break;
+      case T_SHORT: vpmaxuw(dst, src1, src2, vlen_enc); break;
+      case T_INT:   vpmaxud(dst, src1, src2, vlen_enc); break;
+      case T_LONG:  evpmaxuq(dst, k0, src1, src2, false, vlen_enc); break;
+      default: fatal("Unsupported type %s", type2name(elem_bt)); break;
+    }
+  }
+}
+
 void C2_MacroAssembler::vpminmax(int opcode, BasicType elem_bt,
                                  XMMRegister dst, XMMRegister src1, XMMRegister src2,
                                  int vlen_enc) {
@@ -4569,6 +4615,10 @@ void C2_MacroAssembler::evmasked_op(int ideal_opc, BasicType eType, KRegister ma
       evpmaxs(eType, dst, mask, src1, src2, merge, vlen_enc); break;
     case Op_MinV:
       evpmins(eType, dst, mask, src1, src2, merge, vlen_enc); break;
+    case Op_UMinV:
+      evpminu(eType, dst, mask, src1, src2, merge, vlen_enc); break;
+    case Op_UMaxV:
+      evpmaxu(eType, dst, mask, src1, src2, merge, vlen_enc); break;
     case Op_XorV:
       evxor(eType, dst, mask, src1, src2, merge, vlen_enc); break;
     case Op_OrV:
@@ -4629,6 +4679,10 @@ void C2_MacroAssembler::evmasked_op(int ideal_opc, BasicType eType, KRegister ma
       evpmaxs(eType, dst, mask, src1, src2, merge, vlen_enc); break;
     case Op_MinV:
       evpmins(eType, dst, mask, src1, src2, merge, vlen_enc); break;
+    case Op_UMaxV:
+      evpmaxu(eType, dst, mask, src1, src2, merge, vlen_enc); break;
+    case Op_UMinV:
+      evpminu(eType, dst, mask, src1, src2, merge, vlen_enc); break;
     case Op_XorV:
       evxor(eType, dst, mask, src1, src2, merge, vlen_enc); break;
     case Op_OrV:
@@ -6321,5 +6375,34 @@ void C2_MacroAssembler::vector_rearrange_int_float(BasicType bt, XMMRegister dst
   } else {
     assert(bt == T_FLOAT, "");
     vpermps(dst, shuffle, src, vlen_enc);
+  }
+}
+
+void C2_MacroAssembler::select_from_two_vector_evex(BasicType elem_bt, int vlen_enc, XMMRegister dst,
+                                                    XMMRegister src1, XMMRegister src2) {
+  switch(elem_bt) {
+    case T_BYTE:
+      evpermi2b(dst, src1, src2, vlen_enc);
+      break;
+    case T_SHORT:
+      evpermi2w(dst, src1, src2, vlen_enc);
+      break;
+    case T_INT:
+      evpermi2d(dst, src1, src2, vlen_enc);
+      break;
+    case T_LONG:
+      evpermi2q(dst, src1, src2, vlen_enc);
+      break;
+    case T_FLOAT:
+      vcvttps2dq(dst, dst, vlen_enc);
+      evpermi2ps(dst, src1, src2, vlen_enc);
+      break;
+    case T_DOUBLE:
+      evcvttpd2qq(dst, dst, vlen_enc);
+      evpermi2pd(dst, src1, src2, vlen_enc);
+      break;
+    default:
+      fatal("Unsupported type %s", type2name(elem_bt));
+      break;
   }
 }

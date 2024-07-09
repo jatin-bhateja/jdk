@@ -871,6 +871,18 @@ public abstract class ByteVector extends AbstractVector<Byte> {
                     v0.bOp(v1, vm, (i, a, n) -> rotateLeft(a, (int)n));
             case VECTOR_OP_RROTATE: return (v0, v1, vm) ->
                     v0.bOp(v1, vm, (i, a, n) -> rotateRight(a, (int)n));
+            case VECTOR_OP_UMAX: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (byte)Byte.umax(a, b));
+            case VECTOR_OP_UMIN: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (byte)Byte.umin(a, b));
+            case VECTOR_OP_SATURATING_ADD: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (byte)(Byte.saturatingAdd(a, b)));
+            case VECTOR_OP_SATURATING_SUB: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (byte)(Byte.saturatingSub(a, b)));
+            case VECTOR_OP_SATURATING_UADD: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (byte)(Byte.saturatingUnsignedAdd(a, b)));
+            case VECTOR_OP_SATURATING_USUB: return (v0, v1, vm) ->
+                    v0.bOp(v1, vm, (i, a, b) -> (byte)(Byte.saturatingUnsignedSub(a, b)));
             default: return null;
         }
     }
@@ -2566,6 +2578,33 @@ public abstract class ByteVector extends AbstractVector<Byte> {
     final ByteVector selectFromTemplate(ByteVector v,
                                                   AbstractMask<Byte> m) {
         return v.rearrange(this.toShuffle(), m);
+    }
+
+    private static
+    IndexOutOfBoundsException checkIndexFailed(Vector<?> vix, int length) {
+        String msg = String.format("Range check failed: vector %s out of bounds for length %d", vix, length);
+        return new IndexOutOfBoundsException(msg);
+    }
+
+    /**
+     * {@inheritDoc} <!--workaround-->
+     */
+    @Override
+    public abstract
+    ByteVector selectFrom(Vector<Byte> v1, Vector<Byte> v2);
+
+    /*package-private*/
+    @ForceInline
+    final ByteVector selectFromTemplate(ByteVector v1, ByteVector v2) {
+        int twovectorlen = length() * 2;
+        if (this.compare(VectorOperators.UNSIGNED_GT, twovectorlen - 1).anyTrue()) {
+            throw checkIndexFailed(this, twovectorlen);
+        }
+        return (ByteVector)VectorSupport.selectFromTwoVectorOp(getClass(), byte.class, length(), this, v1, v2,
+            (vec1, vec2, vec3) -> {
+                return vec2.rearrange(vec1.toShuffle(), vec3);
+            }
+        );
     }
 
     /// Ternary operations

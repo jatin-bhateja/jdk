@@ -9494,6 +9494,66 @@ void MacroAssembler::evperm(BasicType type, XMMRegister dst, KRegister mask, XMM
   }
 }
 
+void MacroAssembler::evpminu(BasicType type, XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len) {
+  switch(type) {
+    case T_BYTE:
+      evpminub(dst, mask, nds, src, merge, vector_len); break;
+    case T_SHORT:
+      evpminuw(dst, mask, nds, src, merge, vector_len); break;
+    case T_INT:
+      evpminud(dst, mask, nds, src, merge, vector_len); break;
+    case T_LONG:
+      evpminuq(dst, mask, nds, src, merge, vector_len); break;
+    default:
+      fatal("Unexpected type argument %s", type2name(type)); break;
+  }
+}
+
+void MacroAssembler::evpmaxu(BasicType type, XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len) {
+  switch(type) {
+    case T_BYTE:
+      evpmaxub(dst, mask, nds, src, merge, vector_len); break;
+    case T_SHORT:
+      evpmaxuw(dst, mask, nds, src, merge, vector_len); break;
+    case T_INT:
+      evpmaxud(dst, mask, nds, src, merge, vector_len); break;
+    case T_LONG:
+      evpmaxuq(dst, mask, nds, src, merge, vector_len); break;
+    default:
+      fatal("Unexpected type argument %s", type2name(type)); break;
+  }
+}
+
+void MacroAssembler::evpminu(BasicType type, XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len) {
+  switch(type) {
+    case T_BYTE:
+      evpminub(dst, mask, nds, src, merge, vector_len); break;
+    case T_SHORT:
+      evpminuw(dst, mask, nds, src, merge, vector_len); break;
+    case T_INT:
+      evpminud(dst, mask, nds, src, merge, vector_len); break;
+    case T_LONG:
+      evpminuq(dst, mask, nds, src, merge, vector_len); break;
+    default:
+      fatal("Unexpected type argument %s", type2name(type)); break;
+  }
+}
+
+void MacroAssembler::evpmaxu(BasicType type, XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len) {
+  switch(type) {
+    case T_BYTE:
+      evpmaxub(dst, mask, nds, src, merge, vector_len); break;
+    case T_SHORT:
+      evpmaxuw(dst, mask, nds, src, merge, vector_len); break;
+    case T_INT:
+      evpmaxud(dst, mask, nds, src, merge, vector_len); break;
+    case T_LONG:
+      evpmaxuq(dst, mask, nds, src, merge, vector_len); break;
+    default:
+      fatal("Unexpected type argument %s", type2name(type)); break;
+  }
+}
+
 void MacroAssembler::evpmins(BasicType type, XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len) {
   switch(type) {
     case T_BYTE:

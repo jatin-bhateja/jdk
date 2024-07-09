@@ -780,6 +780,7 @@ private:
 
   bool needs_eevex(Register reg1, Register reg2 = noreg, Register reg3 = noreg);
   bool needs_eevex(int enc1, int enc2 = -1, int enc3 = -1);
+  bool needs_evex(XMMRegister reg1, XMMRegister reg2 = xnoreg, XMMRegister reg3 = xnoreg);
 
   void rex_prefix(Address adr, XMMRegister xreg,
                   VexSimdPrefix pre, VexOpcode opc, bool rex_w);
@@ -1871,9 +1872,14 @@ private:
   void vpermilps(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
   void vpermilpd(XMMRegister dst, XMMRegister src, int imm8, int vector_len);
   void vpermpd(XMMRegister dst, XMMRegister src, int imm8, int vector_len);
-  void evpermi2q(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
-  void evpermt2b(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
   void evpmultishiftqb(XMMRegister dst, XMMRegister ctl, XMMRegister src, int vector_len);
+  void evpermi2b(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void evpermi2w(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void evpermi2d(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void evpermi2q(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void evpermi2ps(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void evpermi2pd(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void evpermt2b(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
 
   void pause();
 
@@ -2671,7 +2677,6 @@ private:
   // Minimum of packed integers
   void pminsb(XMMRegister dst, XMMRegister src);
   void vpminsb(XMMRegister dst, XMMRegister src1, XMMRegister src2, int vector_len);
-  void vpminub(XMMRegister dst, XMMRegister src1, XMMRegister src2, int vector_len);
   void pminsw(XMMRegister dst, XMMRegister src);
   void vpminsw(XMMRegister dst, XMMRegister src1, XMMRegister src2, int vector_len);
   void pminsd(XMMRegister dst, XMMRegister src);
@@ -2694,6 +2699,38 @@ private:
   void vmaxps(XMMRegister dst, XMMRegister src1, XMMRegister src2, int vector_len);
   void maxpd(XMMRegister dst, XMMRegister src);
   void vmaxpd(XMMRegister dst, XMMRegister src1, XMMRegister src2, int vector_len);
+
+  // Unsigned maximum packed integers.
+  void vpmaxub(XMMRegister dst, XMMRegister src1, XMMRegister src2, int vector_len);
+  void vpmaxuw(XMMRegister dst, XMMRegister src1, XMMRegister src2, int vector_len);
+  void vpmaxud(XMMRegister dst, XMMRegister src1, XMMRegister src2, int vector_len);
+  void vpmaxub(XMMRegister dst, XMMRegister src1, Address src2, int vector_len);
+  void vpmaxuw(XMMRegister dst, XMMRegister src1, Address src2, int vector_len);
+  void vpmaxud(XMMRegister dst, XMMRegister src1, Address src2, int vector_len);
+  void evpmaxub(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpmaxuw(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpmaxud(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpmaxuq(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpmaxub(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+  void evpmaxuw(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+  void evpmaxud(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+  void evpmaxuq(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+
+  // Unsigned minimum packed integers.
+  void vpminub(XMMRegister dst, XMMRegister src1, XMMRegister src2, int vector_len);
+  void vpminuw(XMMRegister dst, XMMRegister src1, XMMRegister src2, int vector_len);
+  void vpminud(XMMRegister dst, XMMRegister src1, XMMRegister src2, int vector_len);
+  void vpminub(XMMRegister dst, XMMRegister src1, Address src2, int vector_len);
+  void vpminuw(XMMRegister dst, XMMRegister src1, Address src2, int vector_len);
+  void vpminud(XMMRegister dst, XMMRegister src1, Address src2, int vector_len);
+  void evpminub(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpminuw(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpminud(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpminuq(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpminub(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+  void evpminuw(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+  void evpminud(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+  void evpminuq(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
 
   // Shift left packed integers
   void psllw(XMMRegister dst, int shift);
