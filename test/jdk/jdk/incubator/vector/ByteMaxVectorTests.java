@@ -988,11 +988,35 @@ public class ByteMaxVectorTests extends AbstractVectorTest {
             })
     );
 
+    static final List<IntFunction<byte[]>> BYTE_SATURATING_GENERATORS = List.of(
+            withToString("byte[Byte.MIN_VALUE]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (byte)(Byte.MIN_VALUE));
+            }),
+            withToString("byte[Byte.MAX_VALUE]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (byte)(Byte.MAX_VALUE));
+            }),
+            withToString("byte[Byte.MAX_VALUE - 100]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (byte)(Byte.MAX_VALUE - 100));
+            }),
+            withToString("byte[Byte.MIN_VALUE + 100]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (byte)(Byte.MIN_VALUE + 100));
+            })
+    );
+
     // Create combinations of pairs
     // @@@ Might be sensitive to order e.g. div by 0
     static final List<List<IntFunction<byte[]>>> BYTE_GENERATOR_PAIRS =
         Stream.of(BYTE_GENERATORS.get(0)).
                 flatMap(fa -> BYTE_GENERATORS.stream().skip(1).map(fb -> List.of(fa, fb))).
+                collect(Collectors.toList());
+
+    static final List<List<IntFunction<byte[]>>> BYTE_SATURATING_GENERATOR_PAIRS =
+        Stream.of(BYTE_GENERATORS.get(0)).
+                flatMap(fa -> BYTE_SATURATING_GENERATORS.stream().skip(1).map(fb -> List.of(fa, fb))).
                 collect(Collectors.toList());
 
     @DataProvider
@@ -1026,8 +1050,23 @@ public class ByteMaxVectorTests extends AbstractVectorTest {
     }
 
     @DataProvider
+    public Object[][] byteSaturatingBinaryOpProvider() {
+        return BYTE_SATURATING_GENERATOR_PAIRS.stream().map(List::toArray).
+                toArray(Object[][]::new);
+    }
+
+    @DataProvider
     public Object[][] byteIndexedOpProvider() {
         return BYTE_GENERATOR_PAIRS.stream().map(List::toArray).
+                toArray(Object[][]::new);
+    }
+
+    @DataProvider
+    public Object[][] byteSaturatingBinaryOpMaskProvider() {
+        return BOOLEAN_MASK_GENERATORS.stream().
+                flatMap(fm -> BYTE_SATURATING_GENERATOR_PAIRS.stream().map(lfa -> {
+                    return Stream.concat(lfa.stream(), Stream.of(fm)).toArray();
+                })).
                 toArray(Object[][]::new);
     }
 
@@ -3055,7 +3094,7 @@ public class ByteMaxVectorTests extends AbstractVectorTest {
         return (byte)(Byte.saturatingAdd(a, b));
     }
 
-    @Test(dataProvider = "byteBinaryOpProvider")
+    @Test(dataProvider = "byteSaturatingBinaryOpProvider")
     static void SATURATING_ADDByteMaxVectorTests(IntFunction<byte[]> fa, IntFunction<byte[]> fb) {
         byte[] a = fa.apply(SPECIES.length());
         byte[] b = fb.apply(SPECIES.length());
@@ -3072,7 +3111,7 @@ public class ByteMaxVectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, ByteMaxVectorTests::SATURATING_ADD);
     }
 
-    @Test(dataProvider = "byteBinaryOpMaskProvider")
+    @Test(dataProvider = "byteSaturatingBinaryOpMaskProvider")
     static void SATURATING_ADDByteMaxVectorTestsMasked(IntFunction<byte[]> fa, IntFunction<byte[]> fb,
                                           IntFunction<boolean[]> fm) {
         byte[] a = fa.apply(SPECIES.length());
@@ -3096,7 +3135,7 @@ public class ByteMaxVectorTests extends AbstractVectorTest {
         return (byte)(Byte.saturatingSub(a, b));
     }
 
-    @Test(dataProvider = "byteBinaryOpProvider")
+    @Test(dataProvider = "byteSaturatingBinaryOpProvider")
     static void SATURATING_SUBByteMaxVectorTests(IntFunction<byte[]> fa, IntFunction<byte[]> fb) {
         byte[] a = fa.apply(SPECIES.length());
         byte[] b = fb.apply(SPECIES.length());
@@ -3113,7 +3152,7 @@ public class ByteMaxVectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, ByteMaxVectorTests::SATURATING_SUB);
     }
 
-    @Test(dataProvider = "byteBinaryOpMaskProvider")
+    @Test(dataProvider = "byteSaturatingBinaryOpMaskProvider")
     static void SATURATING_SUBByteMaxVectorTestsMasked(IntFunction<byte[]> fa, IntFunction<byte[]> fb,
                                           IntFunction<boolean[]> fm) {
         byte[] a = fa.apply(SPECIES.length());
@@ -3137,7 +3176,7 @@ public class ByteMaxVectorTests extends AbstractVectorTest {
         return (byte)(Byte.saturatingUnsignedAdd(a, b));
     }
 
-    @Test(dataProvider = "byteBinaryOpProvider")
+    @Test(dataProvider = "byteSaturatingBinaryOpProvider")
     static void SATURATING_UADDByteMaxVectorTests(IntFunction<byte[]> fa, IntFunction<byte[]> fb) {
         byte[] a = fa.apply(SPECIES.length());
         byte[] b = fb.apply(SPECIES.length());
@@ -3154,7 +3193,7 @@ public class ByteMaxVectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, ByteMaxVectorTests::SATURATING_UADD);
     }
 
-    @Test(dataProvider = "byteBinaryOpMaskProvider")
+    @Test(dataProvider = "byteSaturatingBinaryOpMaskProvider")
     static void SATURATING_UADDByteMaxVectorTestsMasked(IntFunction<byte[]> fa, IntFunction<byte[]> fb,
                                           IntFunction<boolean[]> fm) {
         byte[] a = fa.apply(SPECIES.length());
@@ -3178,7 +3217,7 @@ public class ByteMaxVectorTests extends AbstractVectorTest {
         return (byte)(Byte.saturatingUnsignedSub(a, b));
     }
 
-    @Test(dataProvider = "byteBinaryOpProvider")
+    @Test(dataProvider = "byteSaturatingBinaryOpProvider")
     static void SATURATING_USUBByteMaxVectorTests(IntFunction<byte[]> fa, IntFunction<byte[]> fb) {
         byte[] a = fa.apply(SPECIES.length());
         byte[] b = fb.apply(SPECIES.length());
@@ -3195,7 +3234,7 @@ public class ByteMaxVectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, ByteMaxVectorTests::SATURATING_USUB);
     }
 
-    @Test(dataProvider = "byteBinaryOpMaskProvider")
+    @Test(dataProvider = "byteSaturatingBinaryOpMaskProvider")
     static void SATURATING_USUBByteMaxVectorTestsMasked(IntFunction<byte[]> fa, IntFunction<byte[]> fb,
                                           IntFunction<boolean[]> fm) {
         byte[] a = fa.apply(SPECIES.length());

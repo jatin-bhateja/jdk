@@ -978,11 +978,35 @@ public class IntMaxVectorTests extends AbstractVectorTest {
             })
     );
 
+    static final List<IntFunction<int[]>> INT_SATURATING_GENERATORS = List.of(
+            withToString("int[Integer.MIN_VALUE]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (int)(Integer.MIN_VALUE));
+            }),
+            withToString("int[Integer.MAX_VALUE]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (int)(Integer.MAX_VALUE));
+            }),
+            withToString("int[Integer.MAX_VALUE - 100]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (int)(Integer.MAX_VALUE - 100));
+            }),
+            withToString("int[Integer.MIN_VALUE + 100]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (int)(Integer.MIN_VALUE + 100));
+            })
+    );
+
     // Create combinations of pairs
     // @@@ Might be sensitive to order e.g. div by 0
     static final List<List<IntFunction<int[]>>> INT_GENERATOR_PAIRS =
         Stream.of(INT_GENERATORS.get(0)).
                 flatMap(fa -> INT_GENERATORS.stream().skip(1).map(fb -> List.of(fa, fb))).
+                collect(Collectors.toList());
+
+    static final List<List<IntFunction<int[]>>> INT_SATURATING_GENERATOR_PAIRS =
+        Stream.of(INT_GENERATORS.get(0)).
+                flatMap(fa -> INT_SATURATING_GENERATORS.stream().skip(1).map(fb -> List.of(fa, fb))).
                 collect(Collectors.toList());
 
     @DataProvider
@@ -1016,8 +1040,23 @@ public class IntMaxVectorTests extends AbstractVectorTest {
     }
 
     @DataProvider
+    public Object[][] intSaturatingBinaryOpProvider() {
+        return INT_SATURATING_GENERATOR_PAIRS.stream().map(List::toArray).
+                toArray(Object[][]::new);
+    }
+
+    @DataProvider
     public Object[][] intIndexedOpProvider() {
         return INT_GENERATOR_PAIRS.stream().map(List::toArray).
+                toArray(Object[][]::new);
+    }
+
+    @DataProvider
+    public Object[][] intSaturatingBinaryOpMaskProvider() {
+        return BOOLEAN_MASK_GENERATORS.stream().
+                flatMap(fm -> INT_SATURATING_GENERATOR_PAIRS.stream().map(lfa -> {
+                    return Stream.concat(lfa.stream(), Stream.of(fm)).toArray();
+                })).
                 toArray(Object[][]::new);
     }
 
@@ -3099,7 +3138,7 @@ public class IntMaxVectorTests extends AbstractVectorTest {
         return (int)(Integer.saturatingAdd(a, b));
     }
 
-    @Test(dataProvider = "intBinaryOpProvider")
+    @Test(dataProvider = "intSaturatingBinaryOpProvider")
     static void SATURATING_ADDIntMaxVectorTests(IntFunction<int[]> fa, IntFunction<int[]> fb) {
         int[] a = fa.apply(SPECIES.length());
         int[] b = fb.apply(SPECIES.length());
@@ -3116,7 +3155,7 @@ public class IntMaxVectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, IntMaxVectorTests::SATURATING_ADD);
     }
 
-    @Test(dataProvider = "intBinaryOpMaskProvider")
+    @Test(dataProvider = "intSaturatingBinaryOpMaskProvider")
     static void SATURATING_ADDIntMaxVectorTestsMasked(IntFunction<int[]> fa, IntFunction<int[]> fb,
                                           IntFunction<boolean[]> fm) {
         int[] a = fa.apply(SPECIES.length());
@@ -3140,7 +3179,7 @@ public class IntMaxVectorTests extends AbstractVectorTest {
         return (int)(Integer.saturatingSub(a, b));
     }
 
-    @Test(dataProvider = "intBinaryOpProvider")
+    @Test(dataProvider = "intSaturatingBinaryOpProvider")
     static void SATURATING_SUBIntMaxVectorTests(IntFunction<int[]> fa, IntFunction<int[]> fb) {
         int[] a = fa.apply(SPECIES.length());
         int[] b = fb.apply(SPECIES.length());
@@ -3157,7 +3196,7 @@ public class IntMaxVectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, IntMaxVectorTests::SATURATING_SUB);
     }
 
-    @Test(dataProvider = "intBinaryOpMaskProvider")
+    @Test(dataProvider = "intSaturatingBinaryOpMaskProvider")
     static void SATURATING_SUBIntMaxVectorTestsMasked(IntFunction<int[]> fa, IntFunction<int[]> fb,
                                           IntFunction<boolean[]> fm) {
         int[] a = fa.apply(SPECIES.length());
@@ -3181,7 +3220,7 @@ public class IntMaxVectorTests extends AbstractVectorTest {
         return (int)(Integer.saturatingUnsignedAdd(a, b));
     }
 
-    @Test(dataProvider = "intBinaryOpProvider")
+    @Test(dataProvider = "intSaturatingBinaryOpProvider")
     static void SATURATING_UADDIntMaxVectorTests(IntFunction<int[]> fa, IntFunction<int[]> fb) {
         int[] a = fa.apply(SPECIES.length());
         int[] b = fb.apply(SPECIES.length());
@@ -3198,7 +3237,7 @@ public class IntMaxVectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, IntMaxVectorTests::SATURATING_UADD);
     }
 
-    @Test(dataProvider = "intBinaryOpMaskProvider")
+    @Test(dataProvider = "intSaturatingBinaryOpMaskProvider")
     static void SATURATING_UADDIntMaxVectorTestsMasked(IntFunction<int[]> fa, IntFunction<int[]> fb,
                                           IntFunction<boolean[]> fm) {
         int[] a = fa.apply(SPECIES.length());
@@ -3222,7 +3261,7 @@ public class IntMaxVectorTests extends AbstractVectorTest {
         return (int)(Integer.saturatingUnsignedSub(a, b));
     }
 
-    @Test(dataProvider = "intBinaryOpProvider")
+    @Test(dataProvider = "intSaturatingBinaryOpProvider")
     static void SATURATING_USUBIntMaxVectorTests(IntFunction<int[]> fa, IntFunction<int[]> fb) {
         int[] a = fa.apply(SPECIES.length());
         int[] b = fb.apply(SPECIES.length());
@@ -3239,7 +3278,7 @@ public class IntMaxVectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, IntMaxVectorTests::SATURATING_USUB);
     }
 
-    @Test(dataProvider = "intBinaryOpMaskProvider")
+    @Test(dataProvider = "intSaturatingBinaryOpMaskProvider")
     static void SATURATING_USUBIntMaxVectorTestsMasked(IntFunction<int[]> fa, IntFunction<int[]> fb,
                                           IntFunction<boolean[]> fm) {
         int[] a = fa.apply(SPECIES.length());

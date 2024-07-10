@@ -963,11 +963,35 @@ public class Long128VectorTests extends AbstractVectorTest {
             })
     );
 
+    static final List<IntFunction<long[]>> LONG_SATURATING_GENERATORS = List.of(
+            withToString("long[Long.MIN_VALUE]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (long)(Long.MIN_VALUE));
+            }),
+            withToString("long[Long.MAX_VALUE]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (long)(Long.MAX_VALUE));
+            }),
+            withToString("long[Long.MAX_VALUE - 100]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (long)(Long.MAX_VALUE - 100));
+            }),
+            withToString("long[Long.MIN_VALUE + 100]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (long)(Long.MIN_VALUE + 100));
+            })
+    );
+
     // Create combinations of pairs
     // @@@ Might be sensitive to order e.g. div by 0
     static final List<List<IntFunction<long[]>>> LONG_GENERATOR_PAIRS =
         Stream.of(LONG_GENERATORS.get(0)).
                 flatMap(fa -> LONG_GENERATORS.stream().skip(1).map(fb -> List.of(fa, fb))).
+                collect(Collectors.toList());
+
+    static final List<List<IntFunction<long[]>>> LONG_SATURATING_GENERATOR_PAIRS =
+        Stream.of(LONG_GENERATORS.get(0)).
+                flatMap(fa -> LONG_SATURATING_GENERATORS.stream().skip(1).map(fb -> List.of(fa, fb))).
                 collect(Collectors.toList());
 
     @DataProvider
@@ -1001,8 +1025,23 @@ public class Long128VectorTests extends AbstractVectorTest {
     }
 
     @DataProvider
+    public Object[][] longSaturatingBinaryOpProvider() {
+        return LONG_SATURATING_GENERATOR_PAIRS.stream().map(List::toArray).
+                toArray(Object[][]::new);
+    }
+
+    @DataProvider
     public Object[][] longIndexedOpProvider() {
         return LONG_GENERATOR_PAIRS.stream().map(List::toArray).
+                toArray(Object[][]::new);
+    }
+
+    @DataProvider
+    public Object[][] longSaturatingBinaryOpMaskProvider() {
+        return BOOLEAN_MASK_GENERATORS.stream().
+                flatMap(fm -> LONG_SATURATING_GENERATOR_PAIRS.stream().map(lfa -> {
+                    return Stream.concat(lfa.stream(), Stream.of(fm)).toArray();
+                })).
                 toArray(Object[][]::new);
     }
 
@@ -3116,7 +3155,7 @@ public class Long128VectorTests extends AbstractVectorTest {
         return (long)(Long.saturatingAdd(a, b));
     }
 
-    @Test(dataProvider = "longBinaryOpProvider")
+    @Test(dataProvider = "longSaturatingBinaryOpProvider")
     static void SATURATING_ADDLong128VectorTests(IntFunction<long[]> fa, IntFunction<long[]> fb) {
         long[] a = fa.apply(SPECIES.length());
         long[] b = fb.apply(SPECIES.length());
@@ -3133,7 +3172,7 @@ public class Long128VectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, Long128VectorTests::SATURATING_ADD);
     }
 
-    @Test(dataProvider = "longBinaryOpMaskProvider")
+    @Test(dataProvider = "longSaturatingBinaryOpMaskProvider")
     static void SATURATING_ADDLong128VectorTestsMasked(IntFunction<long[]> fa, IntFunction<long[]> fb,
                                           IntFunction<boolean[]> fm) {
         long[] a = fa.apply(SPECIES.length());
@@ -3157,7 +3196,7 @@ public class Long128VectorTests extends AbstractVectorTest {
         return (long)(Long.saturatingSub(a, b));
     }
 
-    @Test(dataProvider = "longBinaryOpProvider")
+    @Test(dataProvider = "longSaturatingBinaryOpProvider")
     static void SATURATING_SUBLong128VectorTests(IntFunction<long[]> fa, IntFunction<long[]> fb) {
         long[] a = fa.apply(SPECIES.length());
         long[] b = fb.apply(SPECIES.length());
@@ -3174,7 +3213,7 @@ public class Long128VectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, Long128VectorTests::SATURATING_SUB);
     }
 
-    @Test(dataProvider = "longBinaryOpMaskProvider")
+    @Test(dataProvider = "longSaturatingBinaryOpMaskProvider")
     static void SATURATING_SUBLong128VectorTestsMasked(IntFunction<long[]> fa, IntFunction<long[]> fb,
                                           IntFunction<boolean[]> fm) {
         long[] a = fa.apply(SPECIES.length());
@@ -3198,7 +3237,7 @@ public class Long128VectorTests extends AbstractVectorTest {
         return (long)(Long.saturatingUnsignedAdd(a, b));
     }
 
-    @Test(dataProvider = "longBinaryOpProvider")
+    @Test(dataProvider = "longSaturatingBinaryOpProvider")
     static void SATURATING_UADDLong128VectorTests(IntFunction<long[]> fa, IntFunction<long[]> fb) {
         long[] a = fa.apply(SPECIES.length());
         long[] b = fb.apply(SPECIES.length());
@@ -3215,7 +3254,7 @@ public class Long128VectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, Long128VectorTests::SATURATING_UADD);
     }
 
-    @Test(dataProvider = "longBinaryOpMaskProvider")
+    @Test(dataProvider = "longSaturatingBinaryOpMaskProvider")
     static void SATURATING_UADDLong128VectorTestsMasked(IntFunction<long[]> fa, IntFunction<long[]> fb,
                                           IntFunction<boolean[]> fm) {
         long[] a = fa.apply(SPECIES.length());
@@ -3239,7 +3278,7 @@ public class Long128VectorTests extends AbstractVectorTest {
         return (long)(Long.saturatingUnsignedSub(a, b));
     }
 
-    @Test(dataProvider = "longBinaryOpProvider")
+    @Test(dataProvider = "longSaturatingBinaryOpProvider")
     static void SATURATING_USUBLong128VectorTests(IntFunction<long[]> fa, IntFunction<long[]> fb) {
         long[] a = fa.apply(SPECIES.length());
         long[] b = fb.apply(SPECIES.length());
@@ -3256,7 +3295,7 @@ public class Long128VectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, Long128VectorTests::SATURATING_USUB);
     }
 
-    @Test(dataProvider = "longBinaryOpMaskProvider")
+    @Test(dataProvider = "longSaturatingBinaryOpMaskProvider")
     static void SATURATING_USUBLong128VectorTestsMasked(IntFunction<long[]> fa, IntFunction<long[]> fb,
                                           IntFunction<boolean[]> fm) {
         long[] a = fa.apply(SPECIES.length());

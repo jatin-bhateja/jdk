@@ -973,11 +973,35 @@ public class Short128VectorTests extends AbstractVectorTest {
             })
     );
 
+    static final List<IntFunction<short[]>> SHORT_SATURATING_GENERATORS = List.of(
+            withToString("short[Short.MIN_VALUE]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (short)(Short.MIN_VALUE));
+            }),
+            withToString("short[Short.MAX_VALUE]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (short)(Short.MAX_VALUE));
+            }),
+            withToString("short[Short.MAX_VALUE - 100]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (short)(Short.MAX_VALUE - 100));
+            }),
+            withToString("short[Short.MIN_VALUE + 100]", (int s) -> {
+                return fill(s * BUFFER_REPS,
+                            i -> (short)(Short.MIN_VALUE + 100));
+            })
+    );
+
     // Create combinations of pairs
     // @@@ Might be sensitive to order e.g. div by 0
     static final List<List<IntFunction<short[]>>> SHORT_GENERATOR_PAIRS =
         Stream.of(SHORT_GENERATORS.get(0)).
                 flatMap(fa -> SHORT_GENERATORS.stream().skip(1).map(fb -> List.of(fa, fb))).
+                collect(Collectors.toList());
+
+    static final List<List<IntFunction<short[]>>> SHORT_SATURATING_GENERATOR_PAIRS =
+        Stream.of(SHORT_GENERATORS.get(0)).
+                flatMap(fa -> SHORT_SATURATING_GENERATORS.stream().skip(1).map(fb -> List.of(fa, fb))).
                 collect(Collectors.toList());
 
     @DataProvider
@@ -1011,8 +1035,23 @@ public class Short128VectorTests extends AbstractVectorTest {
     }
 
     @DataProvider
+    public Object[][] shortSaturatingBinaryOpProvider() {
+        return SHORT_SATURATING_GENERATOR_PAIRS.stream().map(List::toArray).
+                toArray(Object[][]::new);
+    }
+
+    @DataProvider
     public Object[][] shortIndexedOpProvider() {
         return SHORT_GENERATOR_PAIRS.stream().map(List::toArray).
+                toArray(Object[][]::new);
+    }
+
+    @DataProvider
+    public Object[][] shortSaturatingBinaryOpMaskProvider() {
+        return BOOLEAN_MASK_GENERATORS.stream().
+                flatMap(fm -> SHORT_SATURATING_GENERATOR_PAIRS.stream().map(lfa -> {
+                    return Stream.concat(lfa.stream(), Stream.of(fm)).toArray();
+                })).
                 toArray(Object[][]::new);
     }
 
@@ -3041,7 +3080,7 @@ public class Short128VectorTests extends AbstractVectorTest {
         return (short)(Short.saturatingAdd(a, b));
     }
 
-    @Test(dataProvider = "shortBinaryOpProvider")
+    @Test(dataProvider = "shortSaturatingBinaryOpProvider")
     static void SATURATING_ADDShort128VectorTests(IntFunction<short[]> fa, IntFunction<short[]> fb) {
         short[] a = fa.apply(SPECIES.length());
         short[] b = fb.apply(SPECIES.length());
@@ -3058,7 +3097,7 @@ public class Short128VectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, Short128VectorTests::SATURATING_ADD);
     }
 
-    @Test(dataProvider = "shortBinaryOpMaskProvider")
+    @Test(dataProvider = "shortSaturatingBinaryOpMaskProvider")
     static void SATURATING_ADDShort128VectorTestsMasked(IntFunction<short[]> fa, IntFunction<short[]> fb,
                                           IntFunction<boolean[]> fm) {
         short[] a = fa.apply(SPECIES.length());
@@ -3082,7 +3121,7 @@ public class Short128VectorTests extends AbstractVectorTest {
         return (short)(Short.saturatingSub(a, b));
     }
 
-    @Test(dataProvider = "shortBinaryOpProvider")
+    @Test(dataProvider = "shortSaturatingBinaryOpProvider")
     static void SATURATING_SUBShort128VectorTests(IntFunction<short[]> fa, IntFunction<short[]> fb) {
         short[] a = fa.apply(SPECIES.length());
         short[] b = fb.apply(SPECIES.length());
@@ -3099,7 +3138,7 @@ public class Short128VectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, Short128VectorTests::SATURATING_SUB);
     }
 
-    @Test(dataProvider = "shortBinaryOpMaskProvider")
+    @Test(dataProvider = "shortSaturatingBinaryOpMaskProvider")
     static void SATURATING_SUBShort128VectorTestsMasked(IntFunction<short[]> fa, IntFunction<short[]> fb,
                                           IntFunction<boolean[]> fm) {
         short[] a = fa.apply(SPECIES.length());
@@ -3123,7 +3162,7 @@ public class Short128VectorTests extends AbstractVectorTest {
         return (short)(Short.saturatingUnsignedAdd(a, b));
     }
 
-    @Test(dataProvider = "shortBinaryOpProvider")
+    @Test(dataProvider = "shortSaturatingBinaryOpProvider")
     static void SATURATING_UADDShort128VectorTests(IntFunction<short[]> fa, IntFunction<short[]> fb) {
         short[] a = fa.apply(SPECIES.length());
         short[] b = fb.apply(SPECIES.length());
@@ -3140,7 +3179,7 @@ public class Short128VectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, Short128VectorTests::SATURATING_UADD);
     }
 
-    @Test(dataProvider = "shortBinaryOpMaskProvider")
+    @Test(dataProvider = "shortSaturatingBinaryOpMaskProvider")
     static void SATURATING_UADDShort128VectorTestsMasked(IntFunction<short[]> fa, IntFunction<short[]> fb,
                                           IntFunction<boolean[]> fm) {
         short[] a = fa.apply(SPECIES.length());
@@ -3164,7 +3203,7 @@ public class Short128VectorTests extends AbstractVectorTest {
         return (short)(Short.saturatingUnsignedSub(a, b));
     }
 
-    @Test(dataProvider = "shortBinaryOpProvider")
+    @Test(dataProvider = "shortSaturatingBinaryOpProvider")
     static void SATURATING_USUBShort128VectorTests(IntFunction<short[]> fa, IntFunction<short[]> fb) {
         short[] a = fa.apply(SPECIES.length());
         short[] b = fb.apply(SPECIES.length());
@@ -3181,7 +3220,7 @@ public class Short128VectorTests extends AbstractVectorTest {
         assertArraysEquals(r, a, b, Short128VectorTests::SATURATING_USUB);
     }
 
-    @Test(dataProvider = "shortBinaryOpMaskProvider")
+    @Test(dataProvider = "shortSaturatingBinaryOpMaskProvider")
     static void SATURATING_USUBShort128VectorTestsMasked(IntFunction<short[]> fa, IntFunction<short[]> fb,
                                           IntFunction<boolean[]> fm) {
         short[] a = fa.apply(SPECIES.length());
