@@ -158,6 +158,9 @@ BasicType Type::array_element_basic_type() const {
     if (this == TypeInt::BYTE)  return T_BYTE;
     if (this == TypeInt::BOOL)  return T_BOOLEAN;
     if (this == TypeInt::SHORT) return T_SHORT;
+    if (this == TypeInt::UBYTE)  return T_BYTE;
+    if (this == TypeInt::USHORT) return T_SHORT;
+    if (this == TypeInt::UINT)   return T_INT;
     return T_VOID;
   }
   return bt;
@@ -1524,6 +1527,26 @@ const TypeInteger* TypeInteger::make(jlong lo, jlong hi, int w, BasicType bt) {
   }
   assert(bt == T_LONG, "basic type not an int or long");
   return TypeLong::make(lo, hi, w);
+}
+
+const Type* Type::get_utype(BasicType bt) {
+  switch(bt) {
+    case T_BYTE:  return TypeInt::UBYTE;
+    case T_SHORT: return TypeInt::USHORT;
+    case T_INT:   return TypeInt::UINT;
+    case T_LONG:  return TypeLong::ULONG;
+    default: fatal("Unexpected type: %s", type2name(bt)); break;
+  }
+}
+
+bool Type::is_utype(const Type* elem_ty) {
+  if (elem_ty == TypeInt::UBYTE  ||
+      elem_ty == TypeInt::USHORT ||
+      elem_ty == TypeInt::UINT   ||
+      elem_ty == TypeLong::ULONG) {
+    return true;
+  }
+  return false;
 }
 
 jlong TypeInteger::get_con_as_long(BasicType bt) const {

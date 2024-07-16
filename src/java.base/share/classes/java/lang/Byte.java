@@ -644,11 +644,11 @@ public final class Byte extends Number implements Comparable<Byte>, Constable {
      * @since 24
      */
     public static byte saturatingSub(byte a, byte b) {
-        byte res = (byte)(a + b);
+        byte res = (byte)(a - b);
         // Saturation occurs when result of computation over opposite polarity inputs exceeds the byte
         // value range, in this case, for a non-commutative operation like subtraction, result polarity does not
         // comply with first argument polarity.
-        boolean opposite_polarity_inputs = ((a ^ b) & POLARITY_MASK_BYTE) == 1;
+        boolean opposite_polarity_inputs = ((a ^ b) & POLARITY_MASK_BYTE) == POLARITY_MASK_BYTE;
         if (opposite_polarity_inputs && ((res & POLARITY_MASK_BYTE) != (a & POLARITY_MASK_BYTE))) {
             return res < 0 ? Byte.MAX_VALUE : Byte.MIN_VALUE;
         } else {
@@ -668,8 +668,8 @@ public final class Byte extends Number implements Comparable<Byte>, Constable {
      */
     public static byte saturatingUnsignedAdd(byte a, byte b) {
         byte res = (byte)(a + b);
-        boolean overflow = ((POLARITY_MASK_BYTE & (a | b)) == POLARITY_MASK_BYTE) && ((POLARITY_MASK_BYTE & res) == 0);
-        if (overflow) {
+        boolean overflow = Byte.compareUnsigned(res, (byte)(a | b)) < 0;
+        if (overflow)  {
            return Byte.UNSIGNED_MAX;
         } else {
            return res;

@@ -2508,6 +2508,40 @@ private:
   void vpaddd(XMMRegister dst, XMMRegister nds, Address src, int vector_len);
   void vpaddq(XMMRegister dst, XMMRegister nds, Address src, int vector_len);
 
+  // Saturating packed insturctions.
+  void vpaddsb(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void vpaddsw(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void vpaddusb(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void vpaddusw(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void evpaddsb(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpaddsw(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpaddusb(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpaddusw(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void vpsubsb(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void vpsubsw(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void vpsubusb(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void vpsubusw(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
+  void evpsubsb(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpsubsw(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpsubusb(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void evpsubusw(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
+  void vpaddsb(XMMRegister dst, XMMRegister nds, Address src, int vector_len);
+  void vpaddsw(XMMRegister dst, XMMRegister nds, Address src, int vector_len);
+  void vpaddusb(XMMRegister dst, XMMRegister nds, Address src, int vector_len);
+  void vpaddusw(XMMRegister dst, XMMRegister nds, Address src, int vector_len);
+  void evpaddsb(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+  void evpaddsw(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+  void evpaddusb(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+  void evpaddusw(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+  void vpsubsb(XMMRegister dst, XMMRegister nds, Address src, int vector_len);
+  void vpsubsw(XMMRegister dst, XMMRegister nds, Address src, int vector_len);
+  void vpsubusb(XMMRegister dst, XMMRegister nds, Address src, int vector_len);
+  void vpsubusw(XMMRegister dst, XMMRegister nds, Address src, int vector_len);
+  void evpsubsb(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+  void evpsubsw(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+  void evpsubusb(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+  void evpsubusw(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
+
   // Leaf level assembler routines for masked operations.
   void evpaddb(XMMRegister dst, KRegister mask, XMMRegister nds, XMMRegister src, bool merge, int vector_len);
   void evpaddb(XMMRegister dst, KRegister mask, XMMRegister nds, Address src, bool merge, int vector_len);
@@ -2651,7 +2685,6 @@ private:
   void psubw(XMMRegister dst, XMMRegister src);
   void psubd(XMMRegister dst, XMMRegister src);
   void psubq(XMMRegister dst, XMMRegister src);
-  void vpsubusb(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
   void vpsubb(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
   void vpsubw(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);
   void vpsubd(XMMRegister dst, XMMRegister nds, XMMRegister src, int vector_len);

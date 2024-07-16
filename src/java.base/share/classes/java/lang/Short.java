@@ -679,11 +679,11 @@ public final class Short extends Number implements Comparable<Short>, Constable 
      * @since 24
      */
     public static short saturatingSub(short a, short b) {
-        short res = (short)(a + b);
+        short res = (short)(a - b);
         // Saturation occurs when result of computation over opposite polarity inputs exceeds the short
         // value range, in this case, for a non-commutative operation like subtraction, result polarity does not
         // comply with first argument polarity.
-        boolean opposite_polarity_inputs = ((a ^ b) & POLARITY_MASK_SHORT) == 1;
+        boolean opposite_polarity_inputs = ((a ^ b) & POLARITY_MASK_SHORT) == POLARITY_MASK_SHORT;
         if (opposite_polarity_inputs && ((res & POLARITY_MASK_SHORT) != (a & POLARITY_MASK_SHORT))) {
             return res < 0 ? Short.MAX_VALUE : Short.MIN_VALUE;
         } else {
@@ -703,8 +703,8 @@ public final class Short extends Number implements Comparable<Short>, Constable 
      */
     public static short saturatingUnsignedAdd(short a, short b) {
         short res = (short)(a + b);
-        boolean overflow = ((POLARITY_MASK_SHORT & (a | b)) == POLARITY_MASK_SHORT) && ((POLARITY_MASK_SHORT & res) == 0);
-        if (overflow) {
+        boolean overflow = Short.compareUnsigned(res, (short)(a | b)) < 0;
+        if (overflow)  {
            return Short.UNSIGNED_MAX;
         } else {
            return res;

@@ -465,6 +465,8 @@ public:
                                                       int stable_dimension,
                                                       BasicType loadbt,
                                                       bool is_unsigned_load);
+  static const Type* get_utype(BasicType elem_bt);
+  static bool is_utype(const Type* elem_ty);
 
   // Speculative type helper methods. See TypePtr.
   virtual const TypePtr* speculative() const                                  { return nullptr; }
@@ -819,7 +821,6 @@ public:
     return makemask(get_const_basic_type(elem_bt), length);
   }
   static const TypeVect *makemask(const Type* elem, uint length);
-
 
   virtual const Type *xmeet( const Type *t) const;
   virtual const Type *xdual() const;     // Compute dual right now.

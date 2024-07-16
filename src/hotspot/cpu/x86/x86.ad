@@ -1960,8 +1960,23 @@ bool Matcher::match_rule_supported_vector(int opcode, int vlen, BasicType bt) {
        if (bt == T_DOUBLE && !VM_Version::supports_avx512dq()) {
          return false;
        }
-       return true;
        break;
+    case Op_SaturatingAddVB:
+    case Op_SaturatingAddVS:
+    case Op_SaturatingSubVB:
+    case Op_SaturatingSubVS:
+       if (size_in_bits < 128 || (size_in_bits == 512 && !VM_Version::supports_avx512bw())) {
+         return false;
+       }
+       break;
+    case Op_SaturatingAddVI:
+    case Op_SaturatingAddVL:
+    case Op_SaturatingSubVI:
+    case Op_SaturatingSubVL:
+      if (size_in_bits < 128) {
+        return false; // Implementation limitation
+      }
+      break;
     case Op_MaskAll:
       if (!VM_Version::supports_evex()) {
         return false;
@@ -2144,6 +2159,22 @@ bool Matcher::match_rule_supported_vector_masked(int opcode, int vlen, BasicType
         return false; // Implementation limitation
       }
       if (is_floating_point_type(bt)) {
+        return false; // Implementation limitation
+      }
+      return true;
+    case Op_SaturatingAddVI:
+    case Op_SaturatingAddVL:
+    case Op_SaturatingSubVI:
+    case Op_SaturatingSubVL:
+      if (size_in_bits < 128) {
+        return false; // Implementation limitation
+      }
+      return true;
+    case Op_SaturatingAddVB:
+    case Op_SaturatingAddVS:
+    case Op_SaturatingSubVB:
+    case Op_SaturatingSubVS:
+      if (size_in_bits < 128 || !VM_Version::supports_avx512bw()) {
         return false; // Implementation limitation
       }
       return true;
@@ -10437,45 +10468,77 @@ instruct DoubleClassCheck_reg_reg_vfpclass(rRegI dst, regD src, kReg ktmp, rFlag
 %}
 
 
-instruct selectFromTwoVecB_evex(vec dst, vec src1, vec src2)
+instruct selectFromTwoVec_evex(vec dst, vec src1, vec src2)
 %{
-  predicate(Matcher::vector_element_basic_type(n) == T_BYTE && VM_Version::supports_avx512_vbmi() &&
-            (Matcher::vector_length_in_bytes(n) == 64 || VM_Version::supports_avx512vl()));
-  match(Set dst (SelectFromTwoVector (Binary dst src1) src2));
-  effect(TEMP dst);
-  format %{ "select_from_two_vector $dst, $src1, $src2 \t!" %}
-  ins_encode %{
-    int vlen_enc = vector_length_encoding(this);
-    __ select_from_two_vector_evex(T_BYTE, vlen_enc, $dst$$XMMRegister, $src1$$XMMRegister, $src2$$XMMRegister);
-  %}
-  ins_pipe(pipe_slow);
-%}
-
-instruct selectFromTwoVecW_evex(vec dst, vec src1, vec src2)
-%{
-  predicate(Matcher::vector_element_basic_type(n) == T_SHORT && VM_Version::supports_avx512bw() &&
-            (Matcher::vector_length_in_bytes(n) == 64 || VM_Version::supports_avx512vl()));
-  match(Set dst (SelectFromTwoVector (Binary dst src1) src2));
-  effect(TEMP dst);
-  format %{ "select_from_two_vector $dst, $src1, $src2 \t!" %}
-  ins_encode %{
-    int vlen_enc = vector_length_encoding(this);
-    __ select_from_two_vector_evex(T_SHORT, vlen_enc, $dst$$XMMRegister, $src1$$XMMRegister, $src2$$XMMRegister);
-  %}
-  ins_pipe(pipe_slow);
-%}
-
-instruct selectFromTwoVecDQPSPD_evex(vec dst, vec src1, vec src2)
-%{
-  predicate(!is_subword_type(Matcher::vector_element_basic_type(n)) &&
-            (Matcher::vector_length_in_bytes(n) == 64 || VM_Version::supports_avx512vl()));
   match(Set dst (SelectFromTwoVector (Binary dst src1) src2));
   effect(TEMP dst);
   format %{ "select_from_two_vector $dst, $src1, $src2 \t!" %}
   ins_encode %{
     int vlen_enc = vector_length_encoding(this);
     BasicType bt = Matcher::vector_element_basic_type(this);
-    __ select_from_two_vector_evex(bt, vlen_enc, $dst$$XMMRegister, $src1$$XMMRegister, $src2$$XMMRegister);
+    __ select_from_two_vector_evex(bt, $dst$$XMMRegister, $src1$$XMMRegister, $src2$$XMMRegister, vlen_enc);
   %}
   ins_pipe(pipe_slow);
+%}
+
+instruct saturating_subword_op_reg(vec dst, vec src1, vec src2)
+%{
+  match(Set dst (SaturatingAddVB src1 src2));
+  match(Set dst (SaturatingAddVS src1 src2));
+  match(Set dst (SaturatingSubVB src1 src2));
+  match(Set dst (SaturatingSubVS src1 src2));
+  format %{ "saturating_vector_op $dst, $src1, $src2 \t!" %}
+  ins_encode %{
+    int vlen_enc = vector_length_encoding(this);
+    bool is_unsigned = Type::is_utype(Matcher::vector_element_type(this));
+    __ saturating_vector_op(this->ideal_Opcode(), $dst$$XMMRegister, $src1$$XMMRegister, $src2$$XMMRegister, is_unsigned, vlen_enc);
+  %}
+  ins_pipe(pipe_slow);
+%}
+
+instruct saturating_subword_op_mem(vec dst, vec src1, memory src2)
+%{
+  match(Set dst (SaturatingAddVB src1 (LoadVector src2)));
+  match(Set dst (SaturatingAddVS src1 (LoadVector src2)));
+  match(Set dst (SaturatingSubVB src1 (LoadVector src2)));
+  match(Set dst (SaturatingSubVS src1 (LoadVector src2)));
+  format %{ "saturating_vector_op $dst, $src1, $src2 \t!" %}
+  ins_encode %{
+    int vlen_enc = vector_length_encoding(this);
+    bool is_unsigned = Type::is_utype(Matcher::vector_element_type(this));
+    __ saturating_vector_op(this->ideal_Opcode(), $dst$$XMMRegister, $src1$$XMMRegister, $src2$$Address, is_unsigned, vlen_enc);
+  %}
+  ins_pipe(pipe_slow);
+%}
+
+instruct saturating_subword_masked_op_reg(vec dst, vec src, kReg mask) %{
+  match(Set dst (SaturatingAddVB (Binary dst src) mask));
+  match(Set dst (SaturatingAddVS (Binary dst src) mask));
+  match(Set dst (SaturatingSubVB (Binary dst src) mask));
+  match(Set dst (SaturatingSubVS (Binary dst src) mask));
+  format %{ "saturating_vector_masked_op $dst, $mask, $src \t!" %}
+  ins_encode %{
+    int vlen_enc = vector_length_encoding(this);
+    int opc = this->ideal_Opcode();
+    bool is_unsigned = Type::is_utype(Matcher::vector_element_type(this));
+    __ evmasked_saturating_op(opc, $mask$$KRegister, $dst$$XMMRegister,
+                              $dst$$XMMRegister, $src$$XMMRegister, is_unsigned, true, vlen_enc);
+  %}
+  ins_pipe( pipe_slow );
+%}
+
+instruct saturating_subword_masked_op_mem(vec dst, memory src, kReg mask) %{
+  match(Set dst (SaturatingAddVB (Binary dst (LoadVector src)) mask));
+  match(Set dst (SaturatingAddVS (Binary dst (LoadVector src)) mask));
+  match(Set dst (SaturatingSubVB (Binary dst (LoadVector src)) mask));
+  match(Set dst (SaturatingSubVS (Binary dst (LoadVector src)) mask));
+  format %{ "saturating_vector_masked_op $dst, $mask, $src \t!" %}
+  ins_encode %{
+    int vlen_enc = vector_length_encoding(this);
+    int opc = this->ideal_Opcode();
+    bool is_unsigned = Type::is_utype(Matcher::vector_element_type(this));
+    __ evmasked_saturating_op(opc, $mask$$KRegister, $dst$$XMMRegister,
+                              $dst$$XMMRegister, $src$$Address, is_unsigned, true, vlen_enc);
+  %}
+  ins_pipe( pipe_slow );
 %}

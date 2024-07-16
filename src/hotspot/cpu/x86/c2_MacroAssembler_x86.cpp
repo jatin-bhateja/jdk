@@ -4525,7 +4525,126 @@ void C2_MacroAssembler::evmasked_op(int ideal_opc, BasicType eType, KRegister ma
     case Op_RotateLeftV:
       evrold(eType, dst, mask, src1, imm8, merge, vlen_enc); break;
     default:
-      fatal("Unsupported masked operation"); break;
+      fatal("Unsupported operation  %s", NodeClassNames[ideal_opc]);
+      break;
+  }
+}
+
+void C2_MacroAssembler::evmasked_saturating_op(int ideal_opc, KRegister mask, XMMRegister dst, XMMRegister src1,
+                                               XMMRegister src2, bool is_unsigned, bool merge, int vlen_enc) {
+  if (is_unsigned) {
+    evmasked_saturating_unsigned_op(ideal_opc, mask, dst, src1, src2, merge, vlen_enc);
+  } else {
+    evmasked_saturating_signed_op(ideal_opc, mask, dst, src1, src2, merge, vlen_enc);
+  }
+}
+
+void C2_MacroAssembler::evmasked_saturating_signed_op(int ideal_opc, KRegister mask, XMMRegister dst, XMMRegister src1,
+                                                     XMMRegister src2, bool merge, int vlen_enc) {
+  switch (ideal_opc) {
+    case Op_SaturatingAddVB:
+      evpaddsb(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingAddVS:
+      evpaddsw(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingSubVB:
+      evpsubsb(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingSubVS:
+      evpsubsw(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingAddVI:
+    case Op_SaturatingAddVL:
+    case Op_SaturatingSubVI:
+    case Op_SaturatingSubVL:
+    default:
+      fatal("Unsupported operation  %s", NodeClassNames[ideal_opc]);
+      break;
+  }
+}
+
+void C2_MacroAssembler::evmasked_saturating_unsigned_op(int ideal_opc, KRegister mask, XMMRegister dst, XMMRegister src1,
+                                                        XMMRegister src2, bool merge, int vlen_enc) {
+  switch (ideal_opc) {
+    case Op_SaturatingAddVB:
+      evpaddusb(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingAddVS:
+      evpaddusw(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingSubVB:
+      evpsubusb(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingSubVS:
+      evpsubusw(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingAddVI:
+    case Op_SaturatingAddVL:
+    case Op_SaturatingSubVI:
+    case Op_SaturatingSubVL:
+    default:
+      fatal("Unsupported operation  %s", NodeClassNames[ideal_opc]);
+      break;
+  }
+}
+
+void C2_MacroAssembler::evmasked_saturating_op(int ideal_opc, KRegister mask, XMMRegister dst, XMMRegister src1,
+                                               Address src2, bool is_unsigned, bool merge, int vlen_enc) {
+  if (is_unsigned) {
+    evmasked_saturating_unsigned_op(ideal_opc, mask, dst, src1, src2, merge, vlen_enc);
+  } else {
+    evmasked_saturating_signed_op(ideal_opc, mask, dst, src1, src2, merge, vlen_enc);
+  }
+}
+
+void C2_MacroAssembler::evmasked_saturating_signed_op(int ideal_opc, KRegister mask, XMMRegister dst, XMMRegister src1,
+                                                      Address src2, bool merge, int vlen_enc) {
+  switch (ideal_opc) {
+    case Op_SaturatingAddVB:
+      evpaddsb(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingAddVS:
+      evpaddsw(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingSubVB:
+      evpsubsb(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingSubVS:
+      evpsubsw(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingAddVI:
+    case Op_SaturatingAddVL:
+    case Op_SaturatingSubVI:
+    case Op_SaturatingSubVL:
+    default:
+      fatal("Unsupported operation  %s", NodeClassNames[ideal_opc]);
+      break;
+  }
+}
+
+void C2_MacroAssembler::evmasked_saturating_unsigned_op(int ideal_opc, KRegister mask, XMMRegister dst, XMMRegister src1,
+                                                        Address src2, bool merge, int vlen_enc) {
+  switch (ideal_opc) {
+    case Op_SaturatingAddVB:
+      evpaddusb(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingAddVS:
+      evpaddusw(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingSubVB:
+      evpsubusb(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingSubVS:
+      evpsubusw(dst, mask, src1, src2, merge, vlen_enc);
+      break;
+    case Op_SaturatingAddVI:
+    case Op_SaturatingAddVL:
+    case Op_SaturatingSubVI:
+    case Op_SaturatingSubVL:
+    default:
+      fatal("Unsupported operation  %s", NodeClassNames[ideal_opc]);
+      break;
   }
 }
 
@@ -4626,7 +4745,8 @@ void C2_MacroAssembler::evmasked_op(int ideal_opc, BasicType eType, KRegister ma
     case Op_AndV:
       evand(eType, dst, mask, src1, src2, merge, vlen_enc); break;
     default:
-      fatal("Unsupported masked operation"); break;
+      fatal("Unsupported operation  %s", NodeClassNames[ideal_opc]);
+      break;
   }
 }
 
@@ -4690,7 +4810,8 @@ void C2_MacroAssembler::evmasked_op(int ideal_opc, BasicType eType, KRegister ma
     case Op_AndV:
       evand(eType, dst, mask, src1, src2, merge, vlen_enc); break;
     default:
-      fatal("Unsupported masked operation"); break;
+      fatal("Unsupported operation  %s", NodeClassNames[ideal_opc]);
+      break;
   }
 }
 
@@ -6378,8 +6499,8 @@ void C2_MacroAssembler::vector_rearrange_int_float(BasicType bt, XMMRegister dst
   }
 }
 
-void C2_MacroAssembler::select_from_two_vector_evex(BasicType elem_bt, int vlen_enc, XMMRegister dst,
-                                                    XMMRegister src1, XMMRegister src2) {
+void C2_MacroAssembler::select_from_two_vector_evex(BasicType elem_bt, XMMRegister dst, XMMRegister src1,
+                                                    XMMRegister src2, int vlen_enc) {
   switch(elem_bt) {
     case T_BYTE:
       evpermi2b(dst, src1, src2, vlen_enc);
@@ -6404,5 +6525,117 @@ void C2_MacroAssembler::select_from_two_vector_evex(BasicType elem_bt, int vlen_
     default:
       fatal("Unsupported type %s", type2name(elem_bt));
       break;
+  }
+}
+
+void C2_MacroAssembler::saturating_signed_vector_op(int opc, XMMRegister dst, XMMRegister src1, XMMRegister src2, int vlen_enc) {
+  switch(opc) {
+    case Op_SaturatingAddVB:
+      vpaddsb(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingAddVS:
+      vpaddsw(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingSubVB:
+      vpsubsb(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingSubVS:
+      vpsubsw(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingAddVI:
+    case Op_SaturatingAddVL:
+    case Op_SaturatingSubVI:
+    case Op_SaturatingSubVL:
+    default:
+      fatal("Unsupported operation  %s", NodeClassNames[opc]);
+      break;
+  }
+}
+
+void C2_MacroAssembler::saturating_unsigned_vector_op(int opc, XMMRegister dst, XMMRegister src1, XMMRegister src2, int vlen_enc) {
+  switch(opc) {
+    case Op_SaturatingAddVB:
+      vpaddusb(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingAddVS:
+      vpaddusw(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingSubVB:
+      vpsubusb(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingSubVS:
+      vpsubusw(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingAddVI:
+    case Op_SaturatingAddVL:
+    case Op_SaturatingSubVI:
+    case Op_SaturatingSubVL:
+    default:
+      fatal("Unsupported operation  %s", NodeClassNames[opc]);
+      break;
+  }
+}
+
+void C2_MacroAssembler::saturating_vector_op(int opc, XMMRegister dst, XMMRegister src1, XMMRegister src2, bool is_unsigned, int vlen_enc) {
+  if (is_unsigned) {
+    saturating_unsigned_vector_op(opc, dst, src1, src2, vlen_enc);
+  } else {
+    saturating_signed_vector_op(opc, dst, src1, src2, vlen_enc);
+  }
+}
+
+void C2_MacroAssembler::saturating_signed_vector_op(int opc, XMMRegister dst, XMMRegister src1, Address src2, int vlen_enc) {
+  switch(opc) {
+    case Op_SaturatingAddVB:
+      vpaddsb(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingAddVS:
+      vpaddsw(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingSubVB:
+      vpsubsb(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingSubVS:
+      vpsubsw(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingAddVI:
+    case Op_SaturatingAddVL:
+    case Op_SaturatingSubVI:
+    case Op_SaturatingSubVL:
+    default:
+      fatal("Unsupported operation  %s", NodeClassNames[opc]);
+      break;
+  }
+}
+
+void C2_MacroAssembler::saturating_unsigned_vector_op(int opc, XMMRegister dst, XMMRegister src1, Address src2, int vlen_enc) {
+  switch(opc) {
+    case Op_SaturatingAddVB:
+      vpaddusb(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingAddVS:
+      vpaddusw(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingSubVB:
+      vpsubusb(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingSubVS:
+      vpsubusw(dst, src1, src2, vlen_enc);
+      break;
+    case Op_SaturatingAddVI:
+    case Op_SaturatingAddVL:
+    case Op_SaturatingSubVI:
+    case Op_SaturatingSubVL:
+    default:
+      fatal("Unsupported operation  %s", NodeClassNames[opc]);
+      break;
+  }
+}
+
+void C2_MacroAssembler::saturating_vector_op(int opc, XMMRegister dst, XMMRegister src1, Address src2, bool is_unsigned, int vlen_enc) {
+  if (is_unsigned) {
+    saturating_unsigned_vector_op(opc, dst, src1, src2, vlen_enc);
+  } else {
+    saturating_signed_vector_op(opc, dst, src1, src2, vlen_enc);
   }
 }

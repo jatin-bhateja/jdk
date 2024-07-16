@@ -78,12 +78,13 @@ class VectorNode : public TypeNode {
   static VectorNode* scalar2vector(Node* s, uint vlen, const Type* opd_t, bool is_mask = false);
   static VectorNode* shift_count(int opc, Node* cnt, uint vlen, BasicType bt);
   static VectorNode* make(int opc, Node* n1, Node* n2, uint vlen, BasicType bt, bool is_var_shift = false);
-  static VectorNode* make(int vopc, Node* n1, Node* n2, const TypeVect* vt, bool is_mask = false, bool is_var_shift = false);
+  static VectorNode* make(int vopc, Node* n1, Node* n2, const TypeVect* vt, bool is_mask = false, bool is_var_shift = false, bool is_unsigned = false);
   static VectorNode* make(int opc, Node* n1, Node* n2, Node* n3, uint vlen, BasicType bt);
   static VectorNode* make(int vopc, Node* n1, Node* n2, Node* n3, const TypeVect* vt);
   static VectorNode* make_mask_node(int vopc, Node* n1, Node* n2, uint vlen, BasicType bt);
 
   static bool is_shift_opcode(int opc);
+  static bool is_unsigned_opcode(int opc);
   static bool can_use_RShiftI_instead_of_URShiftI(Node* n, BasicType bt);
   static bool is_convert_opcode(int opc);
   static bool is_minmax_opcode(int opc);
@@ -149,7 +150,9 @@ class SaturatingVectorNode : public VectorNode {
   bool _is_unsigned;
 
  public:
-  SaturatingVectorNode(Node* in1, Node* in2, const TypeVect* vt, bool is_unsigned) : VectorNode(in1, in2, vt), _is_unsigned(is_unsigned) {}
+  SaturatingVectorNode(Node* in1, Node* in2, const TypeVect* vt, bool is_unsigned) : VectorNode(in1, in2, vt), _is_unsigned(is_unsigned) {
+    init_class_id(Class_SaturatingVector);
+  }
 
   // Needed for proper cloning.
   virtual uint size_of() const { return sizeof(*this); }

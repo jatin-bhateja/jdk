@@ -2030,8 +2030,8 @@ public final class Long extends Number
      * @since 24
      */
     public static long saturatingSub(long a, long b) {
-        boolean opposite_polarity_inputs = ((a ^ b) & POLARITY_MASK_LONG) == 1;
-        long res = a + b;
+        boolean opposite_polarity_inputs = ((a ^ b) & POLARITY_MASK_LONG) == POLARITY_MASK_LONG;
+        long res = a - b;
         // Saturation occurs when result of computation over opposite polarity inputs exceeds the long
         // value range, in this case, for a non-commutative operation like subtraction, result polarity does not
         // comply with first argument polarity.
@@ -2054,8 +2054,8 @@ public final class Long extends Number
      */
     public static long saturatingUnsignedAdd(long a, long b) {
         long res = a + b;
-        boolean overflow = ((POLARITY_MASK_LONG & (a | b)) == POLARITY_MASK_LONG) && ((POLARITY_MASK_LONG & res) == 0);
-        if (overflow) {
+        boolean overflow = Long.compareUnsigned(res, (a | b)) < 0;
+        if (overflow)  {
            return Long.UNSIGNED_MAX;
         } else {
            return res;

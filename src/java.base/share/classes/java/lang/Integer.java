@@ -2081,7 +2081,7 @@ public final class Integer extends Number
      */
     public static int saturatingSub(int a, int b) {
         int res = a - b;
-        boolean opposite_polarity_inputs = ((a ^ b) & POLARITY_MASK_INT) == 1;
+        boolean opposite_polarity_inputs = ((a ^ b) & POLARITY_MASK_INT) == POLARITY_MASK_INT;
         // Saturation occurs when result of computation over opposite polarity inputs exceeds the int
         // value range, in this case, for a non-commutative operation like subtraction, result polarity does not
         // comply with first argument polarity.
@@ -2104,8 +2104,8 @@ public final class Integer extends Number
      */
     public static int saturatingUnsignedAdd(int a, int b) {
         int res = a + b;
-        boolean overflow = ((POLARITY_MASK_INT & (a | b)) == POLARITY_MASK_INT) && ((POLARITY_MASK_INT & res) == 0);
-        if (overflow) {
+        boolean overflow = Integer.compareUnsigned(res, (a | b)) < 0;
+        if (overflow)  {
            return Integer.UNSIGNED_MAX;
         } else {
            return res;

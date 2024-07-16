@@ -495,6 +495,35 @@ public:
   void vgather8b_offset(BasicType elem_bt, XMMRegister dst, Register base, Register idx_base,
                               Register offset, Register rtmp, int vlen_enc);
 
-  void select_from_two_vector_evex(BasicType elem_bt, int vlen_enc, XMMRegister dst, XMMRegister src1, XMMRegister src2);
+  void select_from_two_vector_evex(BasicType elem_bt, XMMRegister dst, XMMRegister src1, XMMRegister src2, int vlen_enc);
 
+  void saturating_vector_op(int opc, XMMRegister dst, XMMRegister src1, XMMRegister src2, bool is_unsigned, int vlen_enc);
+
+  void saturating_vector_op(int opc, XMMRegister dst, XMMRegister src1, Address src2, bool is_unsigned, int vlen_enc);
+
+  void saturating_signed_vector_op(int opc, XMMRegister dst, XMMRegister src1, XMMRegister src2, int vlen_enc);
+
+  void saturating_signed_vector_op(int opc, XMMRegister dst, XMMRegister src1, Address src2, int vlen_enc);
+
+  void saturating_unsigned_vector_op(int opc, XMMRegister dst, XMMRegister src1, XMMRegister src2, int vlen_enc);
+
+  void saturating_unsigned_vector_op(int opc, XMMRegister dst, XMMRegister src1, Address src2, int vlen_enc);
+
+  void evmasked_saturating_op(int ideal_opc, KRegister mask, XMMRegister dst, XMMRegister src1, XMMRegister src2,
+                              bool is_unsigned, bool merge, int vlen_enc);
+
+  void evmasked_saturating_op(int ideal_opc, KRegister mask, XMMRegister dst, XMMRegister src1, Address src2,
+                              bool is_unsigned, bool merge, int vlen_enc);
+
+  void evmasked_saturating_signed_op(int ideal_opc, KRegister mask, XMMRegister dst, XMMRegister src1, XMMRegister src2,
+                              bool merge, int vlen_enc);
+
+  void evmasked_saturating_signed_op(int ideal_opc, KRegister mask, XMMRegister dst, XMMRegister src1, Address src2,
+                              bool merge, int vlen_enc);
+
+  void evmasked_saturating_unsigned_op(int ideal_opc, KRegister mask, XMMRegister dst, XMMRegister src1,
+                                       XMMRegister src2, bool merge, int vlen_enc);
+
+  void evmasked_saturating_unsigned_op(int ideal_opc, KRegister mask, XMMRegister dst, XMMRegister src1,
+                                       Address src2, bool merge, int vlen_enc);
 #endif // CPU_X86_C2_MACROASSEMBLER_X86_HPP
