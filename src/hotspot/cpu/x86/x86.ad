@@ -10509,7 +10509,7 @@ instruct saturating_op_reg_evex(vec dst, vec src1, vec src2, vec xtmp1, vec xtmp
 
 instruct saturating_op_reg_avx(vec dst, vec src1, vec src2, vec xtmp1, vec xtmp2, vec xtmp3, vec xtmp4)
 %{
-  predicate(!Type::is_utype(Matcher::vector_element_type(n)) && !VM_Version::supports_avx512vl());
+  predicate(!Type::is_utype(Matcher::vector_element_type(n)) && Matcher::vector_length_in_bytes(n) <= 32 && !VM_Version::supports_avx512vl());
   match(Set dst (SaturatingAddVI src1 src2));
   match(Set dst (SaturatingAddVL src1 src2));
   match(Set dst (SaturatingSubVI src1 src2));
@@ -10544,7 +10544,7 @@ instruct saturating_unsigned_add_reg_evex(vec dst, vec src1, vec src2, vec xtmp1
 
 instruct saturating_unsigned_add_reg_avx(vec dst, vec src1, vec src2, vec xtmp1, vec xtmp2, vec xtmp3, vec xtmp4)
 %{
-  predicate(Type::is_utype(Matcher::vector_element_type(n)) && !VM_Version::supports_avx512vl());
+  predicate(Type::is_utype(Matcher::vector_element_type(n)) && Matcher::vector_length_in_bytes(n) <= 32 && !VM_Version::supports_avx512vl());
   match(Set dst (SaturatingAddVI src1 src2));
   match(Set dst (SaturatingAddVL src1 src2));
   effect(TEMP dst, TEMP xtmp1, TEMP xtmp2, TEMP xtmp3, TEMP xtmp4);
@@ -10575,7 +10575,7 @@ instruct saturating_unsigned_sub_reg_evex(vec dst, vec src1, vec src2, kReg ktmp
 
 instruct saturating_unsigned_sub_reg_avx(vec dst, vec src1, vec src2, vec xtmp1, vec xtmp2)
 %{
-  predicate(Type::is_utype(Matcher::vector_element_type(n)) && !VM_Version::supports_avx512vl());
+  predicate(Type::is_utype(Matcher::vector_element_type(n)) && Matcher::vector_length_in_bytes(n) <= 32 && !VM_Version::supports_avx512vl());
   match(Set dst (SaturatingSubVI src1 src2));
   match(Set dst (SaturatingSubVL src1 src2));
   effect(TEMP xtmp1, TEMP xtmp2);
