@@ -1965,7 +1965,7 @@ bool Matcher::match_rule_supported_vector(int opcode, int vlen, BasicType bt) {
     case Op_SaturatingAddVS:
     case Op_SaturatingSubVB:
     case Op_SaturatingSubVS:
-       if (size_in_bits < 128 || (size_in_bits == 512 && !VM_Version::supports_avx512bw())) {
+       if (UseAVX < 1 || size_in_bits < 128 || (size_in_bits == 512 && !VM_Version::supports_avx512bw())) {
          return false;
        }
        break;
@@ -1973,7 +1973,7 @@ bool Matcher::match_rule_supported_vector(int opcode, int vlen, BasicType bt) {
     case Op_SaturatingAddVL:
     case Op_SaturatingSubVI:
     case Op_SaturatingSubVL:
-      if (size_in_bits < 128) {
+      if (UseAVX < 1 || size_in_bits < 128) {
         return false; // Implementation limitation
       }
       break;
@@ -2159,14 +2159,6 @@ bool Matcher::match_rule_supported_vector_masked(int opcode, int vlen, BasicType
         return false; // Implementation limitation
       }
       if (is_floating_point_type(bt)) {
-        return false; // Implementation limitation
-      }
-      return true;
-    case Op_SaturatingAddVI:
-    case Op_SaturatingAddVL:
-    case Op_SaturatingSubVI:
-    case Op_SaturatingSubVL:
-      if (size_in_bits < 128) {
         return false; // Implementation limitation
       }
       return true;
@@ -10492,6 +10484,107 @@ instruct saturating_subword_op_reg(vec dst, vec src1, vec src2)
     int vlen_enc = vector_length_encoding(this);
     bool is_unsigned = Type::is_utype(Matcher::vector_element_type(this));
     __ saturating_vector_op(this->ideal_Opcode(), $dst$$XMMRegister, $src1$$XMMRegister, $src2$$XMMRegister, is_unsigned, vlen_enc);
+  %}
+  ins_pipe(pipe_slow);
+%}
+
+instruct saturating_op_reg_evex(vec dst, vec src1, vec src2, vec xtmp1, vec xtmp2, kReg ktmp1, kReg ktmp2)
+%{
+  predicate(!Type::is_utype(Matcher::vector_element_type(n)) && (Matcher::vector_length_in_bytes(n) == 64 || VM_Version::supports_avx512vl()));
+  match(Set dst (SaturatingAddVI src1 src2));
+  match(Set dst (SaturatingAddVL src1 src2));
+  match(Set dst (SaturatingSubVI src1 src2));
+  match(Set dst (SaturatingSubVL src1 src2));
+  effect(TEMP dst, TEMP xtmp1, TEMP xtmp2, TEMP ktmp1, TEMP ktmp2);
+  format %{ "saturating_vector_op $dst, $src1, $src2 \t! using $xtmp1, $xtmp2, $ktmp1 and $ktmp2 as TEMP" %}
+  ins_encode %{
+    int vlen_enc = vector_length_encoding(this);
+    BasicType etype = Matcher::vector_element_basic_type(this);
+    int opc = this->ideal_Opcode();
+    __ saturating_signed_add_sub_dq_evex(etype, opc, $dst$$XMMRegister, $src1$$XMMRegister, $src2$$XMMRegister, $xtmp1$$XMMRegister,
+                                         $xtmp2$$XMMRegister, $ktmp1$$KRegister, $ktmp2$$KRegister, vlen_enc);
+  %}
+  ins_pipe(pipe_slow);
+%}
+
+instruct saturating_op_reg_avx(vec dst, vec src1, vec src2, vec xtmp1, vec xtmp2, vec xtmp3, vec xtmp4)
+%{
+  predicate(!Type::is_utype(Matcher::vector_element_type(n)) && !VM_Version::supports_avx512vl());
+  match(Set dst (SaturatingAddVI src1 src2));
+  match(Set dst (SaturatingAddVL src1 src2));
+  match(Set dst (SaturatingSubVI src1 src2));
+  match(Set dst (SaturatingSubVL src1 src2));
+  effect(TEMP dst, TEMP xtmp1, TEMP xtmp2, TEMP xtmp3, TEMP xtmp4);
+  format %{ "saturating_vector_op $dst, $src1, $src2 \t! using $xtmp1, $xtmp2, $xtmp3 and $xtmp4 as TEMP" %}
+  ins_encode %{
+    int vlen_enc = vector_length_encoding(this);
+    BasicType etype = Matcher::vector_element_basic_type(this);
+    int opc = this->ideal_Opcode();
+    __ saturating_signed_add_sub_dq_avx(etype, opc, $dst$$XMMRegister, $src1$$XMMRegister, $src2$$XMMRegister, $xtmp1$$XMMRegister,
+                                        $xtmp2$$XMMRegister, $xtmp3$$XMMRegister, $xtmp4$$XMMRegister, vlen_enc);
+  %}
+  ins_pipe(pipe_slow);
+%}
+
+instruct saturating_unsigned_add_reg_evex(vec dst, vec src1, vec src2, vec xtmp1, vec xtmp2, vec xtmp3, kReg ktmp)
+%{
+  predicate(Type::is_utype(Matcher::vector_element_type(n)) && (Matcher::vector_length_in_bytes(n) == 64 || VM_Version::supports_avx512vl()));
+  match(Set dst (SaturatingAddVI src1 src2));
+  match(Set dst (SaturatingAddVL src1 src2));
+  effect(TEMP dst, TEMP xtmp1, TEMP xtmp2, TEMP xtmp3, TEMP ktmp);
+  format %{ "saturating_vector_op $dst, $src1, $src2 \t! using $xtmp1, $xtmp2, $xtmp3 and $ktmp as TEMP" %}
+  ins_encode %{
+    int vlen_enc = vector_length_encoding(this);
+    BasicType etype = Matcher::vector_element_basic_type(this);
+    __ saturating_unsigned_add_dq_evex(etype, $dst$$XMMRegister, $src1$$XMMRegister, $src2$$XMMRegister, $xtmp1$$XMMRegister,
+                                       $xtmp2$$XMMRegister, $xtmp3$$XMMRegister, $ktmp$$KRegister, vlen_enc);
+  %}
+  ins_pipe(pipe_slow);
+%}
+
+instruct saturating_unsigned_add_reg_avx(vec dst, vec src1, vec src2, vec xtmp1, vec xtmp2, vec xtmp3, vec xtmp4)
+%{
+  predicate(Type::is_utype(Matcher::vector_element_type(n)) && !VM_Version::supports_avx512vl());
+  match(Set dst (SaturatingAddVI src1 src2));
+  match(Set dst (SaturatingAddVL src1 src2));
+  effect(TEMP dst, TEMP xtmp1, TEMP xtmp2, TEMP xtmp3, TEMP xtmp4);
+  format %{ "saturating_vector_op $dst, $src1, $src2 \t! using $xtmp1, $xtmp2, $xtmp3 and $xtmp4 as TEMP" %}
+  ins_encode %{
+    int vlen_enc = vector_length_encoding(this);
+    BasicType etype = Matcher::vector_element_basic_type(this);
+    __ saturating_unsigned_add_dq_avx(etype, $dst$$XMMRegister, $src1$$XMMRegister, $src2$$XMMRegister, $xtmp1$$XMMRegister,
+                                      $xtmp2$$XMMRegister, $xtmp3$$XMMRegister, $xtmp4$$XMMRegister, vlen_enc);
+  %}
+  ins_pipe(pipe_slow);
+%}
+
+instruct saturating_unsigned_sub_reg_evex(vec dst, vec src1, vec src2, kReg ktmp)
+%{
+  predicate(Type::is_utype(Matcher::vector_element_type(n)) && (Matcher::vector_length_in_bytes(n) == 64 || VM_Version::supports_avx512vl()));
+  match(Set dst (SaturatingSubVI src1 src2));
+  match(Set dst (SaturatingSubVL src1 src2));
+  effect(TEMP ktmp);
+  format %{ "saturating_vector_op $dst, $src1, $src2 \t! using $ktmp as TEMP" %}
+  ins_encode %{
+    int vlen_enc = vector_length_encoding(this);
+    BasicType etype = Matcher::vector_element_basic_type(this);
+    __ saturating_unsigned_sub_dq_evex(etype, $dst$$XMMRegister, $src1$$XMMRegister, $src2$$XMMRegister, $ktmp$$KRegister, vlen_enc);
+  %}
+  ins_pipe(pipe_slow);
+%}
+
+instruct saturating_unsigned_sub_reg_avx(vec dst, vec src1, vec src2, vec xtmp1, vec xtmp2)
+%{
+  predicate(Type::is_utype(Matcher::vector_element_type(n)) && !VM_Version::supports_avx512vl());
+  match(Set dst (SaturatingSubVI src1 src2));
+  match(Set dst (SaturatingSubVL src1 src2));
+  effect(TEMP xtmp1, TEMP xtmp2);
+  format %{ "saturating_vector_op $dst, $src1, $src2 \t! using $xtmp1 and $xtmp2 as TEMP" %}
+  ins_encode %{
+    int vlen_enc = vector_length_encoding(this);
+    BasicType etype = Matcher::vector_element_basic_type(this);
+    __ saturating_unsigned_sub_dq_avx(etype, $dst$$XMMRegister, $src1$$XMMRegister, $src2$$XMMRegister, $xtmp1$$XMMRegister,
+                                      $xtmp2$$XMMRegister, vlen_enc);
   %}
   ins_pipe(pipe_slow);
 %}

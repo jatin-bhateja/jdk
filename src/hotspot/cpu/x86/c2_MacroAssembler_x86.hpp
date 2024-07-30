@@ -113,6 +113,7 @@ public:
 
   void evmovdqu(BasicType type, KRegister kmask, XMMRegister dst, Address src, bool merge, int vector_len);
   void evmovdqu(BasicType type, KRegister kmask, Address dst, XMMRegister src, bool merge, int vector_len);
+  void evmovdqu(BasicType type, KRegister kmask, XMMRegister dst, XMMRegister src, bool merge, int vector_len);
 
   // extract
   void extract(BasicType typ, Register dst, XMMRegister src, int idx);
@@ -508,6 +509,41 @@ public:
   void saturating_unsigned_vector_op(int opc, XMMRegister dst, XMMRegister src1, XMMRegister src2, int vlen_enc);
 
   void saturating_unsigned_vector_op(int opc, XMMRegister dst, XMMRegister src1, Address src2, int vlen_enc);
+
+  void saturating_unsigned_sub_dq_evex(BasicType etype, XMMRegister dst, XMMRegister src1, XMMRegister src2, KRegister ktmp, int vlen_enc);
+
+  void saturating_unsigned_sub_dq_avx(BasicType etype, XMMRegister dst, XMMRegister src1, XMMRegister src2,
+                                      XMMRegister xtmp1, XMMRegister xtmp2, int vlen_enc);
+
+  void saturating_unsigned_add_dq_evex(BasicType etype, XMMRegister dst, XMMRegister src1, XMMRegister src2,
+                                       XMMRegister xtmp1, XMMRegister xtmp2, XMMRegister xtmp3, KRegister ktmp, int vlen_enc);
+
+  void saturating_unsigned_add_dq_avx(BasicType etype, XMMRegister dst, XMMRegister src1, XMMRegister src2,
+                                      XMMRegister xtmp1, XMMRegister xtmp2, XMMRegister xtmp3,
+                                      XMMRegister xtmp4, int vlen_enc);
+
+  void saturating_signed_add_sub_dq_avx(BasicType etype, int opc, XMMRegister dst, XMMRegister src1, XMMRegister src2,
+                                        XMMRegister xtmp1, XMMRegister xtmp2, XMMRegister xtmp3, XMMRegister xtmp4, int vlen_enc);
+
+  void saturating_signed_add_sub_dq_evex(BasicType etype, int opc, XMMRegister dst, XMMRegister src1, XMMRegister src2,
+                                         XMMRegister xtmp1, XMMRegister xtmp2, KRegister ktmp1, KRegister ktmp2, int vlen_enc);
+
+  void evpmovd2m_emu(KRegister ktmp, XMMRegister src, XMMRegister xtmp1, XMMRegister xtmp2, int vlen_enc, bool xtmp2_hold_M1 = false);
+
+  void evpmovq2m_emu(KRegister ktmp, XMMRegister src, XMMRegister xtmp1, XMMRegister xtmp2, int vlen_enc, bool xtmp2_hold_M1 = false);
+
+  void vpsign_extend_dq(BasicType etype, XMMRegister dst, XMMRegister src, int vlen_enc);
+
+  void vpgenmin_value(BasicType etype, XMMRegister dst, XMMRegister allones, int vlen_enc, bool compute_allones = false);
+
+  void vpgenmax_value(BasicType etype, XMMRegister dst, XMMRegister allones, int vlen_enc, bool compute_allones = false);
+
+  void evpcmpu(BasicType etype, KRegister kmask,  XMMRegister src1, XMMRegister src2, Assembler::ComparisonPredicate cond, int vlen_enc);
+
+  void vpcmpgt(BasicType etype, XMMRegister dst, XMMRegister src1, XMMRegister src2, int vlen_enc);
+
+  void evpmov_vec_to_mask(BasicType etype, KRegister ktmp, XMMRegister src, XMMRegister xtmp1, XMMRegister xtmp2,
+                          int vlen_enc, bool xtmp2_hold_M1 = false);
 
   void evmasked_saturating_op(int ideal_opc, KRegister mask, XMMRegister dst, XMMRegister src1, XMMRegister src2,
                               bool is_unsigned, bool merge, int vlen_enc);
