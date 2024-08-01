@@ -1269,6 +1269,7 @@ class VectorLongToMaskNode : public VectorNode {
   virtual Node* Ideal(PhaseGVN* phase, bool can_reshape);
 };
 
+
 //-------------------------- Vector mask broadcast -----------------------------------
 class MaskAllNode : public VectorNode {
  public:
@@ -1611,6 +1612,16 @@ class VectorRearrangeNode : public VectorNode {
   Node* vec1() const { return in(1); }
   Node* vec_shuffle() const { return in(2); }
 };
+
+
+class SelectFromTwoVectorNode : public VectorNode {
+public:
+  SelectFromTwoVectorNode(Node* in1, Node* in2, Node* in3, const TypeVect* vt)
+  : VectorNode(in1, in2, in3, vt) {}
+
+  virtual int Opcode() const;
+};
+
 
 class VectorLoadShuffleNode : public VectorNode {
  public:
