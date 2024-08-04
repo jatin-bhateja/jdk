@@ -318,12 +318,17 @@ public class Short512VectorTests extends AbstractVectorTest {
         try {
             for (; i < a.length; i += vector_len) {
                 for (j = 0; j < vector_len; j++) {
-                    Assert.assertEquals(r[i+j], (((int)order[i + j] < vector_len) ? a[i+(int)order[i+j]] : b[i+(int)order[i+j]-vector_len]));
+                    int idx = i + j;
+                    boolean is_exceptional_idx = (int)order[idx] >= vector_len;
+                    int oidx = is_exceptional_idx ? ((int)order[idx] - vector_len) : (int)order[idx];
+                    Assert.assertEquals(r[idx], (is_exceptional_idx ? b[i + oidx] : a[i + oidx]));
                 }
             }
         } catch (AssertionError e) {
             int idx = i + j;
-            Assert.assertEquals(r[i+j], (((int)order[i + j] < vector_len) ? a[i+(int)order[i+j]] : b[i+(int)order[i+j]-vector_len]), "at index #" + idx + ", order = " + order[i+j] + ", a = " + a[i+(int)order[i+j]] + ", b = " +  b[i+(int)order[i+j]-vector_len]);
+            boolean is_exceptional_idx = (int)order[idx] >= vector_len;
+            int oidx = is_exceptional_idx ? ((int)order[idx] - vector_len) : (int)order[idx];
+            Assert.assertEquals(r[idx], (is_exceptional_idx ? b[i + oidx] : a[i + oidx]), "at index #" + idx + ", order = " + (int)order[idx] + ", a = " + a[i + oidx] + ", b = " +  b[i + oidx]);
         }
     }
 

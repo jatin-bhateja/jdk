@@ -2638,7 +2638,7 @@ bool LibraryCallKit::inline_vector_extract() {
 // V selectFromTwoVectorOp(Class<? extends V> vClass, Class<E> eClass, int length,
 //                         V v1, V v2, V v3,
 //                         SelectFromTwoVector<V> defaultImpl)
-bool LibraryCallKit::inline_vector_select_from_two_vector() {
+bool LibraryCallKit::inline_vector_select_from_two_vectors() {
   const TypeInstPtr* vector_klass = gvn().type(argument(0))->isa_instptr();
   const TypeInstPtr* elem_klass   = gvn().type(argument(1))->isa_instptr();
   const TypeInt*     vlen         = gvn().type(argument(2))->isa_int();
@@ -2668,9 +2668,19 @@ bool LibraryCallKit::inline_vector_select_from_two_vector() {
   BasicType elem_bt = elem_type->basic_type();
 
   if (!arch_supports_vector(Op_SelectFromTwoVector, num_elem, elem_bt, VecMaskNotUsed)) {
-    log_if_needed("  ** not supported: opc=%d vlen=%d etype=%s ismask=useload",
+    int opc = VectorSupport::vop2ideal(VectorSupport::VECTOR_OP_SUB, elem_bt);
+    int sopc = VectorNode::opcode(opc, elem_bt);
+    if (!arch_supports_vector(Op_VectorMaskCmp, num_elem, elem_bt, VecMaskNotUsed)   ||
+        !arch_supports_vector(Op_VectorBlend, num_elem, elem_bt, VecMaskUseLoad)     ||
+        !arch_supports_vector(Op_VectorRearrange, num_elem, elem_bt, VecMaskNotUsed) ||
+        (!is_integral_type(elem_bt) &&
+          ((elem_bt == T_FLOAT && !arch_supports_vector(Op_VectorCastF2X, num_elem, T_INT, VecMaskNotUsed))     ||
+           (elem_bt == T_DOUBLE && !arch_supports_vector(Op_VectorCastD2X, num_elem, T_LONG, VecMaskNotUsed)))) ||
+        !arch_supports_vector(sopc, num_elem, elem_bt, VecMaskNotUsed)) {
+      log_if_needed("  ** not supported: opc=%d vlen=%d etype=%s ismask=useload",
                     Op_SelectFromTwoVector, num_elem, type2name(elem_bt));
-    return false; // not supported
+      return false; // not supported
+    }
   }
 
   ciKlass* vbox_klass = vector_klass->const_oop()->as_instance()->java_lang_Class_klass();

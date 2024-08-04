@@ -1608,6 +1608,7 @@ class VectorRearrangeNode : public VectorNode {
     // assert(mask->is_VectorMask(), "VectorBlendNode requires that third argument be a mask");
   }
 
+  Node* Ideal(PhaseGVN* phase, bool can_reshape);
   virtual int Opcode() const;
   Node* vec1() const { return in(1); }
   Node* vec_shuffle() const { return in(2); }
@@ -1619,6 +1620,7 @@ public:
   SelectFromTwoVectorNode(Node* in1, Node* in2, Node* in3, const TypeVect* vt)
   : VectorNode(in1, in2, in3, vt) {}
 
+  Node* Ideal(PhaseGVN* phase, bool can_reshape);
   virtual int Opcode() const;
 };
 
