@@ -119,13 +119,13 @@ public class IRNode {
     public static final String VECTOR_SIZE_32  = VECTOR_SIZE + "32";
     public static final String VECTOR_SIZE_64  = VECTOR_SIZE + "64";
 
-    private static final String TYPE_BYTE   = "byte";
-    private static final String TYPE_CHAR   = "char";
-    private static final String TYPE_SHORT  = "short";
-    private static final String TYPE_INT    = "int";
-    private static final String TYPE_LONG   = "long";
-    private static final String TYPE_FLOAT  = "float";
-    private static final String TYPE_DOUBLE = "double";
+    private static final String TYPE_BYTE   = "B";
+    private static final String TYPE_CHAR   = "C";
+    private static final String TYPE_SHORT  = "S";
+    private static final String TYPE_INT    = "I";
+    private static final String TYPE_LONG   = "J";
+    private static final String TYPE_FLOAT  = "F";
+    private static final String TYPE_DOUBLE = "D";
 
     /**
      * IR placeholder string to regex-for-compile-phase map.
@@ -160,11 +160,6 @@ public class IRNode {
     public static final String ABS_F = PREFIX + "ABS_F" + POSTFIX;
     static {
         beforeMatchingNameRegex(ABS_F, "AbsF");
-    }
-
-    public static final String ABS_HF = PREFIX + "ABS_HF" + POSTFIX;
-    static {
-        beforeMatchingNameRegex(ABS_HF, "AbsHF");
     }
 
     public static final String ABS_I = PREFIX + "ABS_I" + POSTFIX;
@@ -207,11 +202,6 @@ public class IRNode {
     public static final String ABS_VD = VECTOR_PREFIX + "ABS_VD" + POSTFIX;
     static {
         vectorNode(ABS_VD, "AbsVD", TYPE_DOUBLE);
-    }
-
-    public static final String ABS_VHF = PREFIX + "ABS_VHF" + POSTFIX;
-    static {
-        beforeMatchingNameRegex(ABS_VHF, "AbsVHF");
     }
 
     public static final String ADD = PREFIX + "ADD" + POSTFIX;
