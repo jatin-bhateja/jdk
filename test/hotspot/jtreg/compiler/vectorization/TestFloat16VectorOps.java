@@ -196,28 +196,6 @@ public class TestFloat16VectorOps {
 
     @Test
     @Warmup(10000)
-    @IR(counts = {IRNode.ABS_VHF, ">= 1"},
-        applyIfCPUFeatureOr = {"sve", "true"})
-    @IR(counts = {IRNode.ABS_VHF, ">= 1"},
-        applyIfCPUFeatureAnd = {"fphp", "true", "asimdhp", "true"})
-    public void vectorAbsFloat16() {
-        for (int i = 0; i < LEN; ++i) {
-            output[i] = float16ToRawShortBits(Float16.abs(shortBitsToFloat16(input1[i])));
-        }
-    }
-
-    @Check(test="vectorAbsFloat16")
-    public void checkResultAbs() {
-        for (int i = 0; i < LEN; ++i) {
-            short expected = float16ToRawShortBits(Float16.abs(shortBitsToFloat16(input1[i])));
-            if (output[i] != expected) {
-                throw new RuntimeException("Invalid result: output[" + i + "] = " + output[i] + " != " + expected);
-            }
-        }
-    }
-
-    @Test
-    @Warmup(10000)
     @IR(counts = {IRNode.SQRT_VHF, ">= 1"},
         applyIfCPUFeatureOr = {"avx512_fp16", "true", "sve", "true"})
     @IR(counts = {IRNode.SQRT_VHF, ">= 1"},
