@@ -353,6 +353,12 @@ bool C2Compiler::is_intrinsic_supported(vmIntrinsics::ID id) {
   case vmIntrinsics::_floatToFloat16:
     if (!Matcher::match_rule_supported(Op_ConvF2HF)) return false;
     break;
+  case vmIntrinsics::_sqrt_float16:
+    if (!Matcher::match_rule_supported(Op_SqrtHF)) return false;
+    break;
+  case vmIntrinsics::_fma_float16:
+    if (!Matcher::match_rule_supported(Op_FmaHF)) return false;
+    break;
 
   /* CompareAndSet, Object: */
   case vmIntrinsics::_compareAndSetReference:
@@ -604,30 +610,6 @@ bool C2Compiler::is_intrinsic_supported(vmIntrinsics::ID id) {
   case vmIntrinsics::_doubleIsFinite:
     if (!Matcher::match_rule_supported(Op_IsFiniteD)) return false;
     break;
-  case vmIntrinsics::_add_float16:
-    if (!Matcher::match_rule_supported(Op_AddHF)) return false;
-    break;
-  case vmIntrinsics::_subtract_float16:
-    if (!Matcher::match_rule_supported(Op_SubHF)) return false;
-    break;
-  case vmIntrinsics::_multiply_float16:
-    if (!Matcher::match_rule_supported(Op_MulHF)) return false;
-    break;
-  case vmIntrinsics::_divide_float16:
-    if (!Matcher::match_rule_supported(Op_DivHF)) return false;
-    break;
-    case vmIntrinsics::_max_float16:
-    if (!Matcher::match_rule_supported(Op_MaxHF)) return false;
-    break;
-  case vmIntrinsics::_min_float16:
-    if (!Matcher::match_rule_supported(Op_MinHF)) return false;
-    break;
-  case vmIntrinsics::_sqrt_float16:
-    if (!Matcher::match_rule_supported(Op_SqrtHF)) return false;
-    break;
-  case vmIntrinsics::_fma_float16:
-    if (!Matcher::match_rule_supported(Op_FmaHF)) return false;
-    break;
   case vmIntrinsics::_hashCode:
   case vmIntrinsics::_identityHashCode:
   case vmIntrinsics::_getClass:
@@ -790,6 +772,8 @@ bool C2Compiler::is_intrinsic_supported(vmIntrinsics::ID id) {
   case vmIntrinsics::_Reference_get:
   case vmIntrinsics::_Reference_refersTo0:
   case vmIntrinsics::_PhantomReference_refersTo0:
+  case vmIntrinsics::_Reference_clear0:
+  case vmIntrinsics::_PhantomReference_clear0:
   case vmIntrinsics::_Class_cast:
   case vmIntrinsics::_aescrypt_encryptBlock:
   case vmIntrinsics::_aescrypt_decryptBlock:
@@ -840,6 +824,7 @@ bool C2Compiler::is_intrinsic_supported(vmIntrinsics::ID id) {
   case vmIntrinsics::_VectorLoadMaskedOp:
   case vmIntrinsics::_VectorStoreOp:
   case vmIntrinsics::_VectorStoreMaskedOp:
+  case vmIntrinsics::_VectorSelectFromTwoVectorOp:
   case vmIntrinsics::_VectorGatherOp:
   case vmIntrinsics::_VectorScatterOp:
   case vmIntrinsics::_VectorReductionCoerced:
@@ -862,7 +847,6 @@ bool C2Compiler::is_intrinsic_supported(vmIntrinsics::ID id) {
   case vmIntrinsics::_notifyJvmtiVThreadEnd:
   case vmIntrinsics::_notifyJvmtiVThreadMount:
   case vmIntrinsics::_notifyJvmtiVThreadUnmount:
-  case vmIntrinsics::_notifyJvmtiVThreadHideFrames:
   case vmIntrinsics::_notifyJvmtiVThreadDisableSuspend:
 #endif
     break;

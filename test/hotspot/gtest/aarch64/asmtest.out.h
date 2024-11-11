@@ -293,9 +293,9 @@
     __ ldrshw(r5, Address(r3, 12));                    //       ldrsh   w5, [x3, 12]
     __ ldrsw(r27, Address(r24, 17));                   //       ldrsw   x27, [x24, 17]
     __ ldrd(v13, Address(r29, -35));                   //       ldr     d13, [x29, -35]
-    __ ldrs(v22, Address(r9, -47));                    //       ldr     s22, [x9, -47]
+    __ ldrs(v23, Address(r9, -47));                    //       ldr     s23, [x9, -47]
     __ strd(v11, Address(r0, 9));                      //       str     d11, [x0, 9]
-    __ strs(v20, Address(r0, -127));                   //       str     s20, [x0, -127]
+    __ strs(v21, Address(r0, -127));                   //       str     s21, [x0, -127]
 
 // pre
 // LoadStoreOp
@@ -314,7 +314,7 @@
     __ ldrd(v0, Address(__ pre(r14, -54)));            //       ldr     d0, [x14, -54]!
     __ ldrs(v3, Address(__ pre(r1, 40)));              //       ldr     s3, [x1, 40]!
     __ strd(v4, Address(__ pre(r14, -94)));            //       str     d4, [x14, -94]!
-    __ strs(v17, Address(__ pre(r28, -54)));           //       str     s17, [x28, -54]!
+    __ strs(v18, Address(__ pre(r28, -54)));           //       str     s18, [x28, -54]!
 
 // post
 // LoadStoreOp
@@ -331,8 +331,8 @@
     __ ldrshw(r3, Address(__ post(r11, -48)));         //       ldrsh   w3, [x11], -48
     __ ldrsw(r25, Address(__ post(r23, 22)));          //       ldrsw   x25, [x23], 22
     __ ldrd(v0, Address(__ post(r10, -215)));          //       ldr     d0, [x10], -215
-    __ ldrs(v17, Address(__ post(r6, 55)));            //       ldr     s17, [x6], 55
-    __ strd(v13, Address(__ post(r21, -234)));         //       str     d13, [x21], -234
+    __ ldrs(v19, Address(__ post(r6, 55)));            //       ldr     s19, [x6], 55
+    __ strd(v14, Address(__ post(r21, -234)));         //       str     d14, [x21], -234
     __ strs(v0, Address(__ post(r22, -70)));           //       str     s0, [x22], -70
 
 // base_plus_reg
@@ -349,9 +349,9 @@
     __ ldrsh(r21, Address(r30, r30, Address::sxtw(1))); //      ldrsh   x21, [x30, w30, sxtw #1]
     __ ldrshw(r11, Address(r10, r28, Address::sxtw(1))); //     ldrsh   w11, [x10, w28, sxtw #1]
     __ ldrsw(r28, Address(r19, r10, Address::uxtw(0))); //      ldrsw   x28, [x19, w10, uxtw #0]
-    __ ldrd(v29, Address(r29, r14, Address::sxtw(0))); //       ldr     d29, [x29, w14, sxtw #0]
+    __ ldrd(v30, Address(r29, r14, Address::sxtw(0))); //       ldr     d30, [x29, w14, sxtw #0]
     __ ldrs(v8, Address(r5, r5, Address::sxtw(2)));    //       ldr     s8, [x5, w5, sxtw #2]
-    __ strd(v24, Address(r8, r13, Address::sxtx(0)));  //       str     d24, [x8, x13, sxtx #0]
+    __ strd(v25, Address(r8, r13, Address::sxtx(0)));  //       str     d25, [x8, x13, sxtx #0]
     __ strs(v17, Address(r24, r26, Address::lsl(2)));  //       str     s17, [x24, x26, lsl #2]
 
 // base_plus_scaled_offset
@@ -370,7 +370,7 @@
     __ ldrsw(r10, Address(r7, 6372));                  //       ldrsw   x10, [x7, 6372]
     __ ldrd(v3, Address(r25, 12392));                  //       ldr     d3, [x25, 12392]
     __ ldrs(v12, Address(r9, 7840));                   //       ldr     s12, [x9, 7840]
-    __ strd(v23, Address(r1, 12728));                  //       str     d23, [x1, 12728]
+    __ strd(v24, Address(r1, 12728));                  //       str     d24, [x1, 12728]
     __ strs(v3, Address(r20, 6924));                   //       str     s3, [x20, 6924]
 
 // pcrel
@@ -766,6 +766,21 @@
     __ facgt(v10, __ T2S, v11, v12);                   //       facgt   v10.2S, v11.2S, v12.2S
     __ facgt(v15, __ T4S, v16, v17);                   //       facgt   v15.4S, v16.4S, v17.4S
     __ facgt(v7, __ T2D, v8, v9);                      //       facgt   v7.2D, v8.2D, v9.2D
+
+// VectorScalarNEONInstruction
+    __ fmlavs(v5, __ T2S, v6, v7, 1);                  //       fmla    v5.2S, v6.2S, v7.S[1]
+    __ mulvs(v9, __ T4S, v10, v11, 0);                 //       mul     v9.4S, v10.4S, v11.S[0]
+    __ fmlavs(v5, __ T2D, v6, v7, 0);                  //       fmla    v5.2D, v6.2D, v7.D[0]
+    __ fmlsvs(v5, __ T2S, v6, v7, 0);                  //       fmls    v5.2S, v6.2S, v7.S[0]
+    __ mulvs(v8, __ T4S, v9, v10, 1);                  //       mul     v8.4S, v9.4S, v10.S[1]
+    __ fmlsvs(v5, __ T2D, v6, v7, 0);                  //       fmls    v5.2D, v6.2D, v7.D[0]
+    __ fmulxvs(v6, __ T2S, v7, v8, 0);                 //       fmulx   v6.2S, v7.2S, v8.S[0]
+    __ mulvs(v6, __ T4S, v7, v8, 1);                   //       mul     v6.4S, v7.4S, v8.S[1]
+    __ fmulxvs(v3, __ T2D, v4, v5, 0);                 //       fmulx   v3.2D, v4.2D, v5.D[0]
+    __ mulvs(v13, __ T4H, v14, v15, 2);                //       mul     v13.4H, v14.4H, v15.H[2]
+    __ mulvs(v2, __ T8H, v3, v4, 4);                   //       mul     v2.8H, v3.8H, v4.H[4]
+    __ mulvs(v2, __ T2S, v3, v4, 0);                   //       mul     v2.2S, v3.2S, v4.S[0]
+    __ mulvs(v9, __ T4S, v10, v11, 1);                 //       mul     v9.4S, v10.4S, v11.S[1]
 
 // NEONVectorCompare
     __ cm(Assembler::GT, v2, __ T8B, v3, v4);          //       cmgt    v2.8B, v3.8B, v4.8B
@@ -1361,23 +1376,23 @@
     0xb81b1022,     0x381ea354,     0x79002fd7,     0xf85cf39a,
     0xb8580309,     0x385e218c,     0x784051e1,     0x389e11d8,
     0x789fa1f8,     0x79c01865,     0xb881131b,     0xfc5dd3ad,
-    0xbc5d1136,     0xfc00900b,     0xbc181014,     0xf818ec7d,
+    0xbc5d1137,     0xfc00900b,     0xbc181015,     0xf818ec7d,
     0xb81b8c91,     0x381efc40,     0x78007c3d,     0xf857beb0,
     0xb8413dd4,     0x385fddd6,     0x78409e2f,     0x389eddea,
     0x789e7d94,     0x78de3d55,     0xb8805c13,     0xfc5cadc0,
-    0xbc428c23,     0xfc1a2dc4,     0xbc1caf91,     0xf81475f6,
+    0xbc428c23,     0xfc1a2dc4,     0xbc1caf92,     0xf81475f6,
     0xb81f95d1,     0x381e757e,     0x78014561,     0xf8402436,
     0xb85896e2,     0x385f4763,     0x785db4f0,     0x3880374f,
     0x789e25e7,     0x78dd0563,     0xb88166f9,     0xfc529540,
-    0xbc4374d1,     0xfc1166ad,     0xbc1ba6c0,     0xf820ea7b,
+    0xbc4374d3,     0xfc1166ae,     0xbc1ba6c0,     0xf820ea7b,
     0xb82d68c8,     0x38367a04,     0x782f4b59,     0xf878c8a4,
     0xb8674a24,     0x386b78f1,     0x78776bc0,     0x38a15aca,
-    0x78bedbd5,     0x78fcd94b,     0xb8aa4a7c,     0xfc6ecbbd,
-    0xbc65d8a8,     0xfc2de918,     0xbc3a7b11,     0xf91f1193,
+    0x78bedbd5,     0x78fcd94b,     0xb8aa4a7c,     0xfc6ecbbe,
+    0xbc65d8a8,     0xfc2de919,     0xbc3a7b11,     0xf91f1193,
     0xb91ed5f7,     0x391ec9bd,     0x79182ceb,     0xf95d4b0a,
     0xb9581010,     0x395fc034,     0x795fb221,     0x399d8731,
     0x799efb3b,     0x79dd1a2e,     0xb998e4ea,     0xfd583723,
-    0xbd5ea12c,     0xfd18dc37,     0xbd1b0e83,     0x58ffdaa2,
+    0xbd5ea12c,     0xfd18dc38,     0xbd1b0e83,     0x58ffdaa2,
     0x1800001d,     0xf885d1c0,     0xd8ffda40,     0xf8a77820,
     0xf9980220,     0x1a030301,     0x3a140311,     0x5a0d000b,
     0x7a07015c,     0x9a1001e4,     0xba140182,     0xda0d01bd,

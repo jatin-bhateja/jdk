@@ -705,7 +705,7 @@ VectorNode* VectorNode::make_mask_node(int vopc, Node* n1, Node* n2, uint vlen, 
 }
 
 // Make a vector node for binary operation
-VectorNode* VectorNode::make(int vopc, Node* n1, Node* n2, const TypeVect* vt, bool is_mask, bool is_var_shift) {
+VectorNode* VectorNode::make(int vopc, Node* n1, Node* n2, const TypeVect* vt, bool is_mask, bool is_var_shift, bool is_unsigned) {
   // This method should not be called for unimplemented vectors.
   guarantee(vopc > 0, "vopc must be > 0");
 
@@ -786,6 +786,9 @@ VectorNode* VectorNode::make(int vopc, Node* n1, Node* n2, const TypeVect* vt, b
   case Op_RShiftVI: return new RShiftVINode(n1, n2, vt, is_var_shift);
   case Op_RShiftVL: return new RShiftVLNode(n1, n2, vt, is_var_shift);
 
+  case Op_UMinV: return new UMinVNode(n1, n2, vt);
+  case Op_UMaxV: return new UMaxVNode(n1, n2, vt);
+
   case Op_URShiftVB: return new URShiftVBNode(n1, n2, vt, is_var_shift);
   case Op_URShiftVS: return new URShiftVSNode(n1, n2, vt, is_var_shift);
   case Op_URShiftVI: return new URShiftVINode(n1, n2, vt, is_var_shift);
@@ -806,6 +809,10 @@ VectorNode* VectorNode::make(int vopc, Node* n1, Node* n2, const TypeVect* vt, b
   case Op_ExpandBitsV: return new ExpandBitsVNode(n1, n2, vt);
   case Op_CountLeadingZerosV: return new CountLeadingZerosVNode(n1, vt);
   case Op_CountTrailingZerosV: return new CountTrailingZerosVNode(n1, vt);
+
+  case Op_SaturatingAddV: return new SaturatingAddVNode(n1, n2, vt, is_unsigned);
+  case Op_SaturatingSubV: return new SaturatingSubVNode(n1, n2, vt, is_unsigned);
+
   default:
     fatal("Missed vector creation for '%s'", NodeClassNames[vopc]);
     return nullptr;
@@ -829,6 +836,7 @@ VectorNode* VectorNode::make(int vopc, Node* n1, Node* n2, Node* n3, const TypeV
   case Op_FmaVD: return new FmaVDNode(n1, n2, n3, vt);
   case Op_FmaVF: return new FmaVFNode(n1, n2, n3, vt);
   case Op_FmaVHF: return new FmaVHFNode(n1, n2, n3, vt);
+  case Op_SelectFromTwoVector: return new SelectFromTwoVectorNode(n1, n2, n3, vt);
   case Op_SignumVD: return new SignumVDNode(n1, n2, n3, vt);
   case Op_SignumVF: return new SignumVFNode(n1, n2, n3, vt);
   default:
@@ -2146,5 +2154,4 @@ Node* VectorBlendNode::Identity(PhaseGVN* phase) {
 void VectorBoxAllocateNode::dump_spec(outputStream *st) const {
   CallStaticJavaNode::dump_spec(st);
 }
-
 #endif // !PRODUCT

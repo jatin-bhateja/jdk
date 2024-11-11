@@ -469,6 +469,8 @@ class methodHandle;
   do_intrinsic(_Reference_get,              java_lang_ref_Reference, get_name,       void_object_signature,    F_R)     \
   do_intrinsic(_Reference_refersTo0,        java_lang_ref_Reference, refersTo0_name, object_boolean_signature, F_RN)    \
   do_intrinsic(_PhantomReference_refersTo0, java_lang_ref_PhantomReference, refersTo0_name, object_boolean_signature, F_RN) \
+  do_intrinsic(_Reference_clear0,           java_lang_ref_Reference, clear0_name,    void_method_signature, F_RN)       \
+  do_intrinsic(_PhantomReference_clear0,    java_lang_ref_PhantomReference, clear0_name, void_method_signature, F_RN)   \
                                                                                                                         \
   /* support for com.sun.crypto.provider.AESCrypt and some of its callers */                                            \
   do_class(com_sun_crypto_provider_aescrypt,      "com/sun/crypto/provider/AESCrypt")                                   \
@@ -609,7 +611,6 @@ class methodHandle;
   do_intrinsic(_notifyJvmtiVThreadEnd, java_lang_VirtualThread, notifyJvmtiEnd_name, void_method_signature, F_RN)       \
   do_intrinsic(_notifyJvmtiVThreadMount, java_lang_VirtualThread, notifyJvmtiMount_name, bool_void_signature, F_RN)     \
   do_intrinsic(_notifyJvmtiVThreadUnmount, java_lang_VirtualThread, notifyJvmtiUnmount_name, bool_void_signature, F_RN) \
-  do_intrinsic(_notifyJvmtiVThreadHideFrames, java_lang_VirtualThread, notifyJvmtiHideFrames_name, bool_void_signature, F_SN) \
   do_intrinsic(_notifyJvmtiVThreadDisableSuspend, java_lang_VirtualThread, notifyJvmtiDisableSuspend_name, bool_void_signature, F_SN) \
                                                                                                                         \
   /* support for UnsafeConstants */                                                                                     \
@@ -938,27 +939,13 @@ class methodHandle;
   do_intrinsic(_getAndSetReference,       jdk_internal_misc_Unsafe,     getAndSetReference_name, getAndSetReference_signature, F_R)   \
    do_name(     getAndSetReference_name,                                "getAndSetReference")                                         \
    do_signature(getAndSetReference_signature,                           "(Ljava/lang/Object;JLjava/lang/Object;)Ljava/lang/Object;" ) \
-                                                                                                           \
-  /* Float16Math API intrinsification support */                                                           \
-                                                                                                           \
-  do_name(add_name, "add")                                                                                 \
-  do_name(subtract_name, "subtract")                                                                       \
-  do_name(multiply_name, "multiply")                                                                       \
-  do_name(divide_name, "divide")                                                                           \
-  /* Float16 signatures */                                                                                                \
-  do_signature(short_2_short_signature,   "(SS)S")                                                                        \
-  do_signature(short_3_short_signature,  "(SSS)S")                                                                        \
-  /* Float16 intrinsics for binary operations */                                                                          \
-  do_intrinsic(_add_float16,              jdk_internal_math_Float16Math, add_name,         short_2_short_signature,  F_S) \
-  do_intrinsic(_subtract_float16,         jdk_internal_math_Float16Math, subtract_name,    short_2_short_signature,  F_S) \
-  do_intrinsic(_multiply_float16,         jdk_internal_math_Float16Math, multiply_name,    short_2_short_signature,  F_S) \
-  do_intrinsic(_divide_float16,           jdk_internal_math_Float16Math, divide_name,      short_2_short_signature,  F_S) \
-  do_intrinsic(_max_float16,              jdk_internal_math_Float16Math, max_name,         short_2_short_signature,  F_S) \
-  do_intrinsic(_min_float16,              jdk_internal_math_Float16Math, min_name,         short_2_short_signature,  F_S) \
-  /* Float16 intrinsics for unary operations */                                                                           \
-  do_intrinsic(_sqrt_float16,             jdk_internal_math_Float16Math, sqrt_name,        short_short_signature,   F_S)  \
-  /* Float16 intrinsics for ternary operations */                                                                         \
-  do_intrinsic(_fma_float16,              jdk_internal_math_Float16Math, fma_name,         short_3_short_signature,  F_S) \
+                                                                                                                         \
+  /* Float16Math API intrinsification support */                                                                         \
+  /* Float16 signatures */                                                                                               \
+  do_signature(float16_unary_math_op_sig, "(SLjdk/internal/vm/vector/Float16Math$Float16UnaryMathOp;)S")                 \
+  do_signature(float16_ternary_math_op_sig, "(SSSLjdk/internal/vm/vector/Float16Math$Float16TernaryMathOp;)S")           \
+  do_intrinsic(_sqrt_float16, jdk_internal_vm_vector_Float16Math, sqrt_name, float16_unary_math_op_sig, F_S)             \
+  do_intrinsic(_fma_float16, jdk_internal_vm_vector_Float16Math, fma_name, float16_ternary_math_op_sig, F_S)             \
                                                                                                                                                \
   /* Vector API intrinsification support */                                                                                                    \
                                                                                                                                                \
@@ -999,6 +986,17 @@ class methodHandle;
                                         "Ljdk/internal/vm/vector/VectorSupport$TernaryOperation;)"                                             \
                                         "Ljdk/internal/vm/vector/VectorSupport$Vector;")                                                       \
    do_name(vector_ternary_op_name,     "ternaryOp")                                                                                            \
+                                                                                                                                               \
+  do_intrinsic(_VectorSelectFromTwoVectorOp, jdk_internal_vm_vector_VectorSupport, vector_select_from_op_name, vector_select_from_op_sig, F_S) \
+   do_signature(vector_select_from_op_sig, "(Ljava/lang/Class;"                                                                                \
+                                            "Ljava/lang/Class;"                                                                                \
+                                            "I"                                                                                                \
+                                            "Ljdk/internal/vm/vector/VectorSupport$Vector;"                                                    \
+                                            "Ljdk/internal/vm/vector/VectorSupport$Vector;"                                                    \
+                                            "Ljdk/internal/vm/vector/VectorSupport$Vector;"                                                    \
+                                            "Ljdk/internal/vm/vector/VectorSupport$SelectFromTwoVector;)"                                      \
+                                            "Ljdk/internal/vm/vector/VectorSupport$Vector;")                                                   \
+   do_name(vector_select_from_op_name,     "selectFromTwoVectorOp")                                                                            \
                                                                                                                                                \
   do_intrinsic(_VectorFromBitsCoerced, jdk_internal_vm_vector_VectorSupport, vector_frombits_coerced_name, vector_frombits_coerced_sig, F_S)   \
    do_signature(vector_frombits_coerced_sig, "(Ljava/lang/Class;"                                                                              \

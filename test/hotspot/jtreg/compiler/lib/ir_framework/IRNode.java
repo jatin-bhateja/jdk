@@ -209,6 +209,11 @@ public class IRNode {
         beforeMatchingNameRegex(ADD, "Add(I|L|F|D|P)");
     }
 
+    public static final String ADD_F = PREFIX + "ADD_F" + POSTFIX;
+    static {
+        beforeMatchingNameRegex(ADD_F, "AddF");
+    }
+
     public static final String ADD_I = PREFIX + "ADD_I" + POSTFIX;
     static {
         beforeMatchingNameRegex(ADD_I, "AddI");

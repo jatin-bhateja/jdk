@@ -495,7 +495,6 @@ bool LibraryCallKit::try_to_inline(int predicate) {
                                                                                          "notifyJvmtiMount", false, false);
   case vmIntrinsics::_notifyJvmtiVThreadUnmount: return inline_native_notify_jvmti_funcs(CAST_FROM_FN_PTR(address, OptoRuntime::notify_jvmti_vthread_unmount()),
                                                                                          "notifyJvmtiUnmount", false, false);
-  case vmIntrinsics::_notifyJvmtiVThreadHideFrames:     return inline_native_notify_jvmti_hide();
   case vmIntrinsics::_notifyJvmtiVThreadDisableSuspend: return inline_native_notify_jvmti_sync();
 #endif
 
@@ -544,12 +543,6 @@ bool LibraryCallKit::try_to_inline(int predicate) {
   case vmIntrinsics::_floatToFloat16:
   case vmIntrinsics::_float16ToFloat:           return inline_fp_conversions(intrinsic_id());
   case vmIntrinsics::_sqrt_float16:             return inline_fp16_operations(intrinsic_id(), 1);
-  case vmIntrinsics::_add_float16:
-  case vmIntrinsics::_subtract_float16:
-  case vmIntrinsics::_multiply_float16:
-  case vmIntrinsics::_divide_float16:
-  case vmIntrinsics::_max_float16:
-  case vmIntrinsics::_min_float16:              return inline_fp16_operations(intrinsic_id(), 2);
   case vmIntrinsics::_fma_float16:              return inline_fp16_operations(intrinsic_id(), 3);
   case vmIntrinsics::_floatIsFinite:
   case vmIntrinsics::_floatIsInfinite:
@@ -587,6 +580,8 @@ bool LibraryCallKit::try_to_inline(int predicate) {
   case vmIntrinsics::_Reference_get:            return inline_reference_get();
   case vmIntrinsics::_Reference_refersTo0:      return inline_reference_refersTo0(false);
   case vmIntrinsics::_PhantomReference_refersTo0: return inline_reference_refersTo0(true);
+  case vmIntrinsics::_Reference_clear0:         return inline_reference_clear0(false);
+  case vmIntrinsics::_PhantomReference_clear0:  return inline_reference_clear0(true);
 
   case vmIntrinsics::_Class_cast:               return inline_Class_cast();
 
@@ -760,6 +755,8 @@ bool LibraryCallKit::try_to_inline(int predicate) {
     return inline_vector_extract();
   case vmIntrinsics::_VectorCompressExpand:
     return inline_vector_compress_expand();
+  case vmIntrinsics::_VectorSelectFromTwoVectorOp:
+    return inline_vector_select_from_two_vectors();
   case vmIntrinsics::_IndexVector:
     return inline_index_vector();
   case vmIntrinsics::_IndexPartiallyInUpperRange:
@@ -2978,29 +2975,6 @@ bool LibraryCallKit::inline_native_notify_jvmti_funcs(address funcAddr, const ch
   return true;
 }
 
-// Always update the temporary VTMS transition bit.
-bool LibraryCallKit::inline_native_notify_jvmti_hide() {
-  if (!DoJVMTIVirtualThreadTransitions) {
-    return true;
-  }
-  IdealKit ideal(this);
-
-  {
-    // unconditionally update the temporary VTMS transition bit in current JavaThread
-    Node* thread = ideal.thread();
-    Node* hide = _gvn.transform(argument(0)); // hide argument for temporary VTMS transition notification
-    Node* addr = basic_plus_adr(thread, in_bytes(JavaThread::is_in_tmp_VTMS_transition_offset()));
-    const TypePtr *addr_type = _gvn.type(addr)->isa_ptr();
-
-    sync_kit(ideal);
-    access_store_at(nullptr, addr, addr_type, hide, _gvn.type(hide), T_BOOLEAN, IN_NATIVE | MO_UNORDERED);
-    ideal.sync_kit(this);
-  }
-  final_sync(ideal);
-
-  return true;
-}
-
 // Always update the is_disable_suspend bit.
 bool LibraryCallKit::inline_native_notify_jvmti_sync() {
   if (!DoJVMTIVirtualThreadTransitions) {
@@ -4906,55 +4880,6 @@ bool LibraryCallKit::inline_native_Reflection_getCallerClass() {
 #endif
 
   return false;  // bail-out; let JVM_GetCallerClass do the work
-}
-
-bool LibraryCallKit::inline_fp16_operations(vmIntrinsics::ID id, int num_args) {
-  if (!Matcher::match_rule_supported(Op_ReinterpretS2HF) ||
-      !Matcher::match_rule_supported(Op_ReinterpretHF2S)) {
-    return false;
-  }
-
-  // Transformed nodes
-  Node* fld1 = nullptr;
-  Node* fld2 = nullptr;
-  Node* fld3 = nullptr;
-  switch(num_args) {
-    case 3:
-      assert(argument(2)->bottom_type()->array_element_basic_type() == T_SHORT, "");
-      fld3 = _gvn.transform(new ReinterpretS2HFNode(argument(2)));
-    // fall-through
-    case 2:
-      assert(argument(1)->bottom_type()->array_element_basic_type() == T_SHORT, "");
-      fld2 = _gvn.transform(new ReinterpretS2HFNode(argument(1)));
-    // fall-through
-    case 1:
-      assert(argument(0)->bottom_type()->array_element_basic_type() == T_SHORT, "");
-      fld1 = _gvn.transform(new ReinterpretS2HFNode(argument(0)));
-      break;
-    default: fatal("Unsupported number of arguments %d", num_args);
-  }
-
-  Node* result = nullptr;
-  switch (id) {
-  // Unary operations
-  case vmIntrinsics::_sqrt_float16:      result = _gvn.transform(new SqrtHFNode(C, control(), fld1)); break;
-
-  // Binary operations
-  case vmIntrinsics::_add_float16:       result = _gvn.transform(new AddHFNode(fld1, fld2));    break;
-  case vmIntrinsics::_subtract_float16:  result = _gvn.transform(new SubHFNode(fld1, fld2));    break;
-  case vmIntrinsics::_multiply_float16:  result = _gvn.transform(new MulHFNode(fld1, fld2));    break;
-  case vmIntrinsics::_divide_float16:    result = _gvn.transform(new DivHFNode(0, fld1, fld2)); break;
-  case vmIntrinsics::_max_float16:       result = _gvn.transform(new MaxHFNode(fld1, fld2));    break;
-  case vmIntrinsics::_min_float16:       result = _gvn.transform(new MinHFNode(fld1, fld2));    break;
-
-  // Ternary operations
-  case vmIntrinsics::_fma_float16:       result = _gvn.transform(new FmaHFNode(control(), fld1, fld2, fld3)); break;
-  default:
-    fatal_unexpected_iid(id);
-    break;
-  }
-  set_result(_gvn.transform(new ReinterpretHF2SNode(result)));
-  return true;
 }
 
 bool LibraryCallKit::inline_fp_conversions(vmIntrinsics::ID id) {
@@ -7018,6 +6943,48 @@ bool LibraryCallKit::inline_reference_refersTo0(bool is_phantom) {
   return true;
 }
 
+//----------------------------inline_reference_clear0----------------------------
+// void java.lang.ref.Reference.clear0();
+// void java.lang.ref.PhantomReference.clear0();
+bool LibraryCallKit::inline_reference_clear0(bool is_phantom) {
+  // This matches the implementation in JVM_ReferenceClear, see the comments there.
+
+  // Get arguments
+  Node* reference_obj = null_check_receiver();
+  if (stopped()) return true;
+
+  // Common access parameters
+  DecoratorSet decorators = IN_HEAP | AS_NO_KEEPALIVE;
+  decorators |= (is_phantom ? ON_PHANTOM_OOP_REF : ON_WEAK_OOP_REF);
+  Node* referent_field_addr = basic_plus_adr(reference_obj, java_lang_ref_Reference::referent_offset());
+  const TypePtr* referent_field_addr_type = _gvn.type(referent_field_addr)->isa_ptr();
+  const Type* val_type = TypeOopPtr::make_from_klass(env()->Object_klass());
+
+  Node* referent = access_load_at(reference_obj,
+                                  referent_field_addr,
+                                  referent_field_addr_type,
+                                  val_type,
+                                  T_OBJECT,
+                                  decorators);
+
+  IdealKit ideal(this);
+#define __ ideal.
+  __ if_then(referent, BoolTest::ne, null());
+    sync_kit(ideal);
+    access_store_at(reference_obj,
+                    referent_field_addr,
+                    referent_field_addr_type,
+                    null(),
+                    val_type,
+                    T_OBJECT,
+                    decorators);
+    __ sync_kit(this);
+  __ end_if();
+  final_sync(ideal);
+#undef __
+
+  return true;
+}
 
 Node* LibraryCallKit::load_field_from_object(Node* fromObj, const char* fieldName, const char* fieldTypeString,
                                              DecoratorSet decorators, bool is_static,
@@ -7408,11 +7375,11 @@ bool LibraryCallKit::inline_counterMode_AESCrypt(vmIntrinsics::ID id) {
 
 //------------------------------get_key_start_from_aescrypt_object-----------------------
 Node * LibraryCallKit::get_key_start_from_aescrypt_object(Node *aescrypt_object) {
-#if defined(PPC64) || defined(S390)
+#if defined(PPC64) || defined(S390) || defined(RISCV64)
   // MixColumns for decryption can be reduced by preprocessing MixColumns with round keys.
   // Intel's extension is based on this optimization and AESCrypt generates round keys by preprocessing MixColumns.
   // However, ppc64 vncipher processes MixColumns and requires the same round keys with encryption.
-  // The ppc64 stubs of encryption and decryption use the same round keys (sessionK[0]).
+  // The ppc64 and riscv64 stubs of encryption and decryption use the same round keys (sessionK[0]).
   Node* objSessionK = load_field_from_object(aescrypt_object, "sessionK", "[[I");
   assert (objSessionK != nullptr, "wrong version of com.sun.crypto.provider.AESCrypt");
   if (objSessionK == nullptr) {
@@ -8644,3 +8611,45 @@ bool LibraryCallKit::inline_blackhole() {
 
   return true;
 }
+
+bool LibraryCallKit::inline_fp16_operations(vmIntrinsics::ID id, int num_args) {
+  if (!Matcher::match_rule_supported(Op_ReinterpretS2HF) ||
+      !Matcher::match_rule_supported(Op_ReinterpretHF2S)) {
+    return false;
+  }
+
+  // Transformed nodes
+  Node* fld1 = nullptr;
+  Node* fld2 = nullptr;
+  Node* fld3 = nullptr;
+  switch(num_args) {
+    case 3:
+      assert(argument(2)->bottom_type()->array_element_basic_type() == T_SHORT, "");
+      fld3 = _gvn.transform(new ReinterpretS2HFNode(argument(2)));
+    // fall-through
+    case 2:
+      assert(argument(1)->bottom_type()->array_element_basic_type() == T_SHORT, "");
+      fld2 = _gvn.transform(new ReinterpretS2HFNode(argument(1)));
+    // fall-through
+    case 1:
+      assert(argument(0)->bottom_type()->array_element_basic_type() == T_SHORT, "");
+      fld1 = _gvn.transform(new ReinterpretS2HFNode(argument(0)));
+      break;
+    default: fatal("Unsupported number of arguments %d", num_args);
+  }
+
+  Node* result = nullptr;
+  switch (id) {
+  // Unary operations
+  case vmIntrinsics::_sqrt_float16:      result = _gvn.transform(new SqrtHFNode(C, control(), fld1)); break;
+
+  // Ternary operations
+  case vmIntrinsics::_fma_float16:       result = _gvn.transform(new FmaHFNode(control(), fld1, fld2, fld3)); break;
+  default:
+    fatal_unexpected_iid(id);
+    break;
+  }
+  set_result(_gvn.transform(new ReinterpretHF2SNode(result)));
+  return true;
+}
+

@@ -3959,13 +3959,14 @@ void MatchNode::count_commutative_op(int& count) {
     "MulI","MulL","MulHF","MulF","MulD",
     "OrI","OrL",
     "XorI","XorL"
+    "UMax","UMin"
   };
 
   static const char *commut_vector_op_list[] = {
     "AddVB", "AddVS", "AddVI", "AddVL", "AddVHF", "AddVF", "AddVD",
     "MulVB", "MulVS", "MulVI", "MulVL", "MulVHF", "MulVF", "MulVD",
     "AndV", "OrV", "XorV",
-    "MaxVHF", "MinVHF", "MaxV", "MinV"
+    "MaxVHF", "MinVHF", "MaxV", "MinV", "UMax","UMin"
   };
 
   if (_lChild && _rChild && (_lChild->_lChild || _rChild->_lChild)) {
@@ -4342,7 +4343,7 @@ bool MatchRule::is_vector() const {
     "NegVF","NegVD","NegVI","NegVL",
     "SqrtVD","SqrtVF","SqrtVHF",
     "AndV" ,"XorV" ,"OrV",
-    "MaxV", "MinV", "MinVHF", "MaxVHF",
+    "MaxV", "MinV", "MinVHF", "MaxVHF", "UMinV", "UMaxV",
     "CompressV", "ExpandV", "CompressM", "CompressBitsV", "ExpandBitsV",
     "AddReductionVI", "AddReductionVL",
     "AddReductionVF", "AddReductionVD",
@@ -4358,14 +4359,14 @@ bool MatchRule::is_vector() const {
     "Replicate","ReverseV","ReverseBytesV",
     "RoundDoubleModeV","RotateLeftV" , "RotateRightV", "LoadVector","StoreVector",
     "LoadVectorGather", "StoreVectorScatter", "LoadVectorGatherMasked", "StoreVectorScatterMasked",
-    "VectorTest", "VectorLoadMask", "VectorStoreMask", "VectorBlend", "VectorInsert",
+    "SelectFromTwoVector", "VectorTest", "VectorLoadMask", "VectorStoreMask", "VectorBlend", "VectorInsert",
     "VectorRearrange", "VectorLoadShuffle", "VectorLoadConst",
     "VectorCastB2X", "VectorCastS2X", "VectorCastI2X",
     "VectorCastL2X", "VectorCastF2X", "VectorCastD2X", "VectorCastF2HF", "VectorCastHF2F",
     "VectorUCastB2X", "VectorUCastS2X", "VectorUCastI2X",
     "VectorMaskWrapper", "VectorMaskCmp", "VectorReinterpret", "LoadVectorMasked", "StoreVectorMasked",
     "FmaVD", "FmaVF", "FmaVHF", "PopCountVI", "PopCountVL", "PopulateIndex", "VectorLongToMask",
-    "CountLeadingZerosV", "CountTrailingZerosV", "SignumVF", "SignumVD",
+    "CountLeadingZerosV", "CountTrailingZerosV", "SignumVF", "SignumVD", "SaturatingAddV", "SaturatingSubV",
     // Next are vector mask ops.
     "MaskAll", "AndVMask", "OrVMask", "XorVMask", "VectorMaskCast",
     "RoundVF", "RoundVD",
