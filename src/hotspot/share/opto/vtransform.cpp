@@ -537,7 +537,7 @@ VTransformApplyResult VTransformBoolVectorNode::apply(const VLoopAnalyzer& vloop
 
   PhaseIdealLoop* phase = vloop_analyzer.vloop().phase();
   ConINode* mask_node  = phase->igvn().intcon((int)mask);
-  const TypeVect* vt = TypeVect::make(bt, vlen);
+  const TypeVect* vt = TypeVect::makemask(bt, vlen);
   VectorNode* vn = new VectorMaskCmpNode(mask, cmp_in1, cmp_in2, mask_node, vt);
   register_new_node_from_vectorization_and_replace_scalar_nodes(vloop_analyzer, vn);
   return VTransformApplyResult::make_vector(vn, vlen, vn->vect_type()->length_in_bytes());

@@ -8186,6 +8186,11 @@ instruct vcmp64(vec dst, vec src1, vec src2, immI8 cond, kReg ktmp) %{
     BasicType src1_elem_bt = Matcher::vector_element_basic_type(this, $src1);
 
     switch (src1_elem_bt) {
+      case T_SHORT: {
+        __ evpcmpw($ktmp$$KRegister, mask, $src1$$XMMRegister, $src2$$XMMRegister, cmp, !is_unsigned, vlen_enc);
+        __ evmovdquw($dst$$XMMRegister, $ktmp$$KRegister, ExternalAddress(vector_all_bits_set()), merge, vlen_enc, noreg);
+        break;
+      }
       case T_INT: {
         __ evpcmpd($ktmp$$KRegister, mask, $src1$$XMMRegister, $src2$$XMMRegister, cmp, !is_unsigned, vlen_enc);
         __ evmovdqul($dst$$XMMRegister, $ktmp$$KRegister, ExternalAddress(vector_all_bits_set()), merge, vlen_enc, noreg);

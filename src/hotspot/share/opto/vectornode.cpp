@@ -90,6 +90,8 @@ int VectorNode::opcode(int sopc, BasicType bt) {
     return (bt == T_FLOAT ? Op_VectorBlend : 0);
   case Op_CMoveD:
     return (bt == T_DOUBLE ? Op_VectorBlend : 0);
+  case Op_CMoveI:
+    return (is_integral_type(bt) ? Op_VectorBlend : 0);
   case Op_Bool:
     return Op_VectorMaskCmp;
   case Op_DivHF:
