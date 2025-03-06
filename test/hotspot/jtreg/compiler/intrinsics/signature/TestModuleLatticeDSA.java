@@ -62,7 +62,7 @@ public class TestModuleLatticeDSA {
            break;
            case 3 : kg.initialize(NamedParameterSpec.ML_DSA_65, rnd);
            break;
-           case 5 : kg.initialize(NamedParameterSpec.ML_DSA_65, rnd);
+           case 5 : kg.initialize(NamedParameterSpec.ML_DSA_87, rnd);
            break;
            default:
            assert false : "Incorrect Security Level should be 2,3 or 5";
