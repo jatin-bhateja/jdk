@@ -504,6 +504,12 @@ final class IntVector128 extends IntVector {
 
     @Override
     @ForceInline
+    public IntMask128 intersect(Vector<Integer> v) {
+        return super.intersectTemplate(IntMask128.class, v);  // specialize
+    }
+
+    @Override
+    @ForceInline
     public IntVector128 selectFrom(Vector<Integer> v) {
         return (IntVector128)
             super.selectFromTemplate((IntVector128) v);  // specialize

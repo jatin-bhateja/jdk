@@ -541,6 +541,24 @@ public abstract sealed class IntVector extends AbstractVector<Integer>
         return r;
     }
 
+    static VectorMask<Integer> intersectHelper(Vector<Integer> v1, Vector<Integer> v2) {
+        IntVector va = (IntVector) v1;
+        IntVector vb = (IntVector) v2;
+        int vlen = va.length();
+        boolean[] bits = new boolean[vlen];
+        int[] a = va.vec();
+        int[] b = vb.vec();
+        for (int i = 0; i < vlen; i++) {
+            for (int j = 0; j < vlen; j++) {
+                if (a[i] == b[j]) {
+                    bits[i] = true;
+                    break;
+                }
+            }
+        }
+        return va.maskFactory(bits);
+    }
+
     static IntVector selectFromTwoVectorHelper(Vector<Integer> indexes, Vector<Integer> src1, Vector<Integer> src2) {
         int vlen = indexes.length();
         int[] res = new int[vlen];
@@ -2559,6 +2577,25 @@ public abstract sealed class IntVector extends AbstractVector<Integer>
                                                         (v1, m1) -> expandHelper(v1, m1));
     }
 
+    @Override
+    public abstract
+    VectorMask<Integer> intersect(Vector<Integer> v);
+
+    /*package-private*/
+    @ForceInline
+    final
+    <M extends VectorMask<Integer>>
+    M intersectTemplate(Class<M> maskType, Vector<Integer> v) {
+        IntVector that = (IntVector) v;
+        that.check(this);
+        return VectorSupport.intersectOp(getClass(), maskType, laneTypeOrdinal(),
+                                         length(), this, that,
+                                         (v1, v2) -> {
+                                             @SuppressWarnings("unchecked")
+                                             M result = (M) intersectHelper(v1, v2);
+                                             return result;
+                                         });
+    }
 
     /**
      * {@inheritDoc} <!--workaround-->

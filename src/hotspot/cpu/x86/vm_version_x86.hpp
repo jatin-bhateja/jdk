@@ -274,7 +274,9 @@ class VM_Version : public Abstract_VM_Version {
              avx512_4vnniw : 1,
              avx512_4fmaps : 1,
         fast_short_rep_mov : 1,
-                           : 9,
+                           : 3,
+      avx512_vp2intersect  : 1,
+                           : 5,
                  serialize : 1,
                      hybrid: 1,
                            : 4,
@@ -437,6 +439,7 @@ protected:
     decl(APX_F,             apx_f             ) /* Intel Advanced Performance Extensions*/ \
     decl(SHA512,            sha512            ) /* SHA512 instructions*/ \
     decl(AVX512_FP16,       avx512_fp16       ) /* AVX512 FP16 ISA support*/ \
+    decl(AVX512_VP2INTERSECT, avx512_vp2intersect) /* VP2INTERSECT instructions*/ \
     decl(AVX10_1,           avx10_1           ) /* AVX10 512 bit vector ISA Version 1 support*/ \
     decl(AVX10_2,           avx10_2           ) /* AVX10 512 bit vector ISA Version 2 support*/ \
     decl(HYBRID,            hybrid            ) /* Hybrid architecture */
@@ -899,6 +902,7 @@ public:
   static bool supports_avx512_vbmi()  { return _features.supports_feature(CPU_AVX512_VBMI); }
   static bool supports_avx512_vbmi2() { return _features.supports_feature(CPU_AVX512_VBMI2); }
   static bool supports_avx512_fp16()  { return _features.supports_feature(CPU_AVX512_FP16); }
+  static bool supports_avx512_vp2intersect() { return _features.supports_feature(CPU_AVX512_VP2INTERSECT); }
   static bool supports_hv()           { return _features.supports_feature(CPU_HV); }
   static bool supports_serialize()    { return _features.supports_feature(CPU_SERIALIZE); }
   static bool supports_hybrid()       { return _features.supports_feature(CPU_HYBRID); }

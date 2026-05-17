@@ -504,6 +504,12 @@ final class IntVectorMax extends IntVector {
 
     @Override
     @ForceInline
+    public IntMaskMax intersect(Vector<Integer> v) {
+        return super.intersectTemplate(IntMaskMax.class, v);  // specialize
+    }
+
+    @Override
+    @ForceInline
     public IntVectorMax selectFrom(Vector<Integer> v) {
         return (IntVectorMax)
             super.selectFromTemplate((IntVectorMax) v);  // specialize

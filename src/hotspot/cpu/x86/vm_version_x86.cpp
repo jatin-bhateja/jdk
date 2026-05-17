@@ -2963,6 +2963,8 @@ VM_Version::VM_Features VM_Version::CpuidInfo::feature_flags() const {
     vm_features.set_feature(CPU_ERMS);
   if (sef_cpuid7_edx.bits.fast_short_rep_mov != 0)
     vm_features.set_feature(CPU_FSRM);
+  if (sef_cpuid7_edx.bits.avx512_vp2intersect != 0)
+    vm_features.set_feature(CPU_AVX512_VP2INTERSECT);
   if (std_cpuid1_ecx.bits.clmul != 0)
     vm_features.set_feature(CPU_CLMUL);
   if (sef_cpuid7_ebx.bits.rtm != 0)

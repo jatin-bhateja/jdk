@@ -504,6 +504,12 @@ final class ByteVector512 extends ByteVector {
 
     @Override
     @ForceInline
+    public ByteMask512 intersect(Vector<Byte> v) {
+        return super.intersectTemplate(ByteMask512.class, v);  // specialize
+    }
+
+    @Override
+    @ForceInline
     public ByteVector512 selectFrom(Vector<Byte> v) {
         return (ByteVector512)
             super.selectFromTemplate((ByteVector512) v);  // specialize

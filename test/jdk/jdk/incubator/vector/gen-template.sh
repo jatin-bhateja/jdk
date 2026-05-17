@@ -84,6 +84,7 @@ shift_masked_const_template="Shift-Masked-Const-op"
 get_template="Get-op"
 rearrange_template="Rearrange"
 compressexpand_template="CompressExpand"
+intersect_template="Intersect"
 broadcast_template="Broadcast"
 zero_template="Zero"
 slice_template="Slice-op"
@@ -565,6 +566,9 @@ gen_op_tmpl $rearrange_template "rearrange" ""
 
 # Compress/Expand
 gen_op_tmpl $compressexpand_template "compress_expand" ""
+
+# Intersect
+gen_op_tmpl $intersect_template "intersect" "" "BITWISE"
 
 # Get
 gen_get_op "lane" ""

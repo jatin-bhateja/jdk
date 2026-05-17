@@ -541,6 +541,24 @@ public abstract sealed class ShortVector extends AbstractVector<Short>
         return r;
     }
 
+    static VectorMask<Short> intersectHelper(Vector<Short> v1, Vector<Short> v2) {
+        ShortVector va = (ShortVector) v1;
+        ShortVector vb = (ShortVector) v2;
+        int vlen = va.length();
+        boolean[] bits = new boolean[vlen];
+        short[] a = va.vec();
+        short[] b = vb.vec();
+        for (int i = 0; i < vlen; i++) {
+            for (int j = 0; j < vlen; j++) {
+                if (a[i] == b[j]) {
+                    bits[i] = true;
+                    break;
+                }
+            }
+        }
+        return va.maskFactory(bits);
+    }
+
     static ShortVector selectFromTwoVectorHelper(Vector<Short> indexes, Vector<Short> src1, Vector<Short> src2) {
         int vlen = indexes.length();
         short[] res = new short[vlen];
@@ -2575,6 +2593,25 @@ public abstract sealed class ShortVector extends AbstractVector<Short>
                                                         (v1, m1) -> expandHelper(v1, m1));
     }
 
+    @Override
+    public abstract
+    VectorMask<Short> intersect(Vector<Short> v);
+
+    /*package-private*/
+    @ForceInline
+    final
+    <M extends VectorMask<Short>>
+    M intersectTemplate(Class<M> maskType, Vector<Short> v) {
+        ShortVector that = (ShortVector) v;
+        that.check(this);
+        return VectorSupport.intersectOp(getClass(), maskType, laneTypeOrdinal(),
+                                         length(), this, that,
+                                         (v1, v2) -> {
+                                             @SuppressWarnings("unchecked")
+                                             M result = (M) intersectHelper(v1, v2);
+                                             return result;
+                                         });
+    }
 
     /**
      * {@inheritDoc} <!--workaround-->

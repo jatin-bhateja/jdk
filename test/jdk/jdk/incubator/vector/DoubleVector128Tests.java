@@ -364,6 +364,34 @@ relativeError));
         }
     }
 
+    static void assertIntersectArraysEquals(boolean[] r, double[] a, double[] b, int vector_len) {
+        int i = 0, j = 0;
+        try {
+            for (; i < a.length; i += vector_len) {
+                for (j = 0; j < vector_len; j++) {
+                    boolean expected = false;
+                    for (int k = 0; k < vector_len; k++) {
+                        if (a[i + j] == b[i + k]) {
+                            expected = true;
+                            break;
+                        }
+                    }
+                    assertEquals(r[i + j], expected);
+                }
+            }
+        } catch (AssertionError e) {
+            int idx = i + j;
+            boolean expected = false;
+            for (int k = 0; k < vector_len; k++) {
+                if (a[i + j] == b[i + k]) {
+                    expected = true;
+                    break;
+                }
+            }
+            assertEquals(r[idx], expected, "at index #" + idx + ", a=" + a[idx] + ", expected=" + expected);
+        }
+    }
+
     static void assertSelectFromTwoVectorEquals(double[] r, double[] order, double[] a, double[] b, int vector_len) {
         int i = 0, j = 0;
         boolean is_exceptional_idx = false;

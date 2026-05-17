@@ -1334,6 +1334,17 @@ class methodHandle;
                                       "Ljdk/internal/vm/vector/VectorSupport$VectorPayload;")                                                  \
    do_name(vector_compress_expand_op_name,     "compressExpandOp")                                                                             \
                                                                                                                                                \
+  do_intrinsic(_VectorIntersect, jdk_internal_vm_vector_VectorSupport, vector_intersect_op_name, vector_intersect_op_sig, F_S)                 \
+   do_signature(vector_intersect_op_sig, "(Ljava/lang/Class;"                                                                                  \
+                                      "Ljava/lang/Class;"                                                                                      \
+                                      "I"                                                                                                      \
+                                      "I"                                                                                                      \
+                                      "Ljdk/internal/vm/vector/VectorSupport$Vector;"                                                          \
+                                      "Ljdk/internal/vm/vector/VectorSupport$Vector;"                                                          \
+                                      "Ljdk/internal/vm/vector/VectorSupport$VectorIntersectOp;)"                                              \
+                                      "Ljdk/internal/vm/vector/VectorSupport$VectorMask;")                                                     \
+   do_name(vector_intersect_op_name,     "intersectOp")                                                                                        \
+                                                                                                                                               \
   do_intrinsic(_IndexVector, jdk_internal_vm_vector_VectorSupport, index_vector_op_name, index_vector_op_sig, F_S)                             \
     do_signature(index_vector_op_sig, "(Ljava/lang/Class;"                                                                                     \
                                        "I"                                                                                                     \

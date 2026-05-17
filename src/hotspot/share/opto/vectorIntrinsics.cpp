@@ -3007,6 +3007,82 @@ bool LibraryCallKit::inline_vector_compress_expand() {
 
 //
 //  <V extends Vector<E>,
+//   M extends VectorMask<E>,
+//   E>
+//  M intersectOp(Class<? extends V> vClass, Class<? extends M> mClass, int laneType,
+//                int length, V v1, V v2,
+//                VectorIntersectOp<V, M> defaultImpl)
+//
+bool LibraryCallKit::inline_vector_intersect() {
+  const TypeInstPtr* vector_klass = gvn().type(argument(0))->isa_instptr();
+  const TypeInstPtr* mask_klass   = gvn().type(argument(1))->isa_instptr();
+  const TypeInt*     laneType     = gvn().type(argument(2))->isa_int();
+  const TypeInt*     vlen         = gvn().type(argument(3))->isa_int();
+
+  if (vector_klass == nullptr || vector_klass->const_oop() == nullptr ||
+      mask_klass   == nullptr || mask_klass->const_oop()   == nullptr ||
+      laneType     == nullptr || !laneType->is_con() ||
+      vlen         == nullptr || !vlen->is_con()) {
+    log_if_needed("  ** missing constant: vclass=%s mclass=%s etype=%s vlen=%s",
+                    NodeClassNames[argument(0)->Opcode()],
+                    NodeClassNames[argument(1)->Opcode()],
+                    NodeClassNames[argument(2)->Opcode()],
+                    NodeClassNames[argument(3)->Opcode()]);
+    return false; // not enough info for intrinsification
+  }
+
+  if (!is_klass_initialized(vector_klass) || !is_klass_initialized(mask_klass)) {
+    log_if_needed("  ** klass argument not initialized");
+    return false;
+  }
+
+  VectorSupport::LaneType vltype = static_cast<VectorSupport::LaneType>(laneType->get_con());
+  if (!is_primitive_lane_type(vltype)) {
+    log_if_needed("  ** not a primitive lt=%s", VectorSupport::lanetype2name(vltype));
+    return false;
+  }
+
+  int num_elem = vlen->get_con();
+  BasicType elem_bt = get_vector_primitive_lane_type(vltype);
+
+  if (!arch_supports_vector(Op_VectorIntersect, num_elem, elem_bt, VecMaskUseStore)) {
+    log_if_needed("  ** not supported: opc=VectorIntersect vlen=%d etype=%s",
+                    num_elem, type2name(elem_bt));
+    return false; // not supported
+  }
+
+  ciKlass* vbox_klass = vector_klass->const_oop()->as_instance()->java_lang_Class_klass();
+  const TypeInstPtr* vbox_type = TypeInstPtr::make_exact(TypePtr::NotNull, vbox_klass);
+
+  ciKlass* mbox_klass = mask_klass->const_oop()->as_instance()->java_lang_Class_klass();
+  assert(is_vector_mask(mbox_klass), "argument(1) should be a mask class");
+  const TypeInstPtr* mbox_type = TypeInstPtr::make_exact(TypePtr::NotNull, mbox_klass);
+
+  Node* vec1 = unbox_vector(argument(4), vbox_type, elem_bt, num_elem);
+  if (vec1 == nullptr) {
+    log_if_needed("  ** unbox failed v1=%s",
+                    NodeClassNames[argument(4)->Opcode()]);
+    return false;
+  }
+
+  Node* vec2 = unbox_vector(argument(5), vbox_type, elem_bt, num_elem);
+  if (vec2 == nullptr) {
+    log_if_needed("  ** unbox failed v2=%s",
+                    NodeClassNames[argument(5)->Opcode()]);
+    return false;
+  }
+
+  const TypeVect* vt = TypeVect::make(elem_bt, num_elem, /*is_mask=*/true);
+  Node* operation = gvn().transform(trace_vector(new VectorIntersectNode(vec1, vec2, vt)));
+
+  Node* vbox = box_vector(operation, mbox_type, elem_bt, num_elem);
+  set_result(vbox);
+  C->set_max_vector_size(MAX2(C->max_vector_size(), (uint)(num_elem * type2aelembytes(elem_bt))));
+  return true;
+}
+
+//
+//  <V extends Vector<E>,
 //   E,
 //   S extends VectorSpecies<E>>
 //  V indexVector(Class<? extends V> vClass, int laneType,

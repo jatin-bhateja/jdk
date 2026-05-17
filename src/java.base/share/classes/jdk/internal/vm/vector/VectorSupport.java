@@ -96,6 +96,9 @@ public class VectorSupport {
     public static final int VECTOR_OP_COMPRESS_BITS = 33;
     public static final int VECTOR_OP_EXPAND_BITS = 34;
 
+    // Intersect operation
+    public static final int VECTOR_OP_INTERSECT = 35;
+
     // Math routines
     public static final int VECTOR_OP_TAN = 101;
     public static final int VECTOR_OP_TANH = 102;
@@ -724,6 +727,25 @@ public class VectorSupport {
                                    CompressExpandOperation<V, M> defaultImpl) {
         assert isNonCapturingLambda(defaultImpl) : defaultImpl;
         return defaultImpl.apply(v, m);
+    }
+
+    /* ============================================================================ */
+
+    public interface VectorIntersectOp<V extends Vector<?>,
+                                       M extends VectorMask<?>> {
+        M apply(V v1, V v2);
+    }
+
+    @IntrinsicCandidate
+    public static
+    <V extends Vector<E>,
+     M extends VectorMask<E>,
+     E>
+    M intersectOp(Class<? extends V> vClass, Class<? extends M> mClass, int laneType,
+                  int length, V v1, V v2,
+                  VectorIntersectOp<V, M> defaultImpl) {
+        assert isNonCapturingLambda(defaultImpl) : defaultImpl;
+        return defaultImpl.apply(v1, v2);
     }
 
     /* ============================================================================ */

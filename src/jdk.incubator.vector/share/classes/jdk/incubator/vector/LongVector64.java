@@ -495,6 +495,12 @@ final class LongVector64 extends LongVector {
 
     @Override
     @ForceInline
+    public LongMask64 intersect(Vector<Long> v) {
+        return super.intersectTemplate(LongMask64.class, v);  // specialize
+    }
+
+    @Override
+    @ForceInline
     public LongVector64 selectFrom(Vector<Long> v) {
         return (LongVector64)
             super.selectFromTemplate((LongVector64) v);  // specialize

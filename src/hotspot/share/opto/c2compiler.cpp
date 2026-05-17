@@ -831,6 +831,7 @@ bool C2Compiler::is_intrinsic_supported(vmIntrinsics::ID id) {
   case vmIntrinsics::_getObjectSize:
     break;
   case vmIntrinsics::_VectorCompressExpand:
+  case vmIntrinsics::_VectorIntersect:
   case vmIntrinsics::_VectorUnaryOp:
   case vmIntrinsics::_VectorBinaryOp:
   case vmIntrinsics::_VectorTernaryOp:

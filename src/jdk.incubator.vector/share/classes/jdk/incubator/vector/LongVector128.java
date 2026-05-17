@@ -495,6 +495,12 @@ final class LongVector128 extends LongVector {
 
     @Override
     @ForceInline
+    public LongMask128 intersect(Vector<Long> v) {
+        return super.intersectTemplate(LongMask128.class, v);  // specialize
+    }
+
+    @Override
+    @ForceInline
     public LongVector128 selectFrom(Vector<Long> v) {
         return (LongVector128)
             super.selectFromTemplate((LongVector128) v);  // specialize

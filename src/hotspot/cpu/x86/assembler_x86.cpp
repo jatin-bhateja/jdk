@@ -14136,6 +14136,24 @@ void Assembler::evpmovw2m(KRegister dst, XMMRegister src, int vector_len) {
   emit_int16(0x29, (0xC0 | encode));
 }
 
+void Assembler::evp2intersectd(KRegister kdst, XMMRegister nds, XMMRegister src, int vector_len) {
+  assert(VM_Version::supports_avx512_vp2intersect(), "");
+  // EVEX.NDS.{128,256,512}.F2.0F38.W0 68 /r
+  InstructionAttr attributes(vector_len, /* vex_w */ false, /* legacy_mode */ false, /* no_mask_reg */ true, /* uses_vl */ true);
+  attributes.set_is_evex_instruction();
+  int encode = vex_prefix_and_encode(kdst->encoding(), nds->encoding(), src->encoding(), VEX_SIMD_F2, VEX_OPCODE_0F_38, &attributes);
+  emit_int16(0x68, (0xC0 | encode));
+}
+
+void Assembler::evp2intersectq(KRegister kdst, XMMRegister nds, XMMRegister src, int vector_len) {
+  assert(VM_Version::supports_avx512_vp2intersect(), "");
+  // EVEX.NDS.{128,256,512}.F2.0F38.W1 68 /r
+  InstructionAttr attributes(vector_len, /* vex_w */ true, /* legacy_mode */ false, /* no_mask_reg */ true, /* uses_vl */ true);
+  attributes.set_is_evex_instruction();
+  int encode = vex_prefix_and_encode(kdst->encoding(), nds->encoding(), src->encoding(), VEX_SIMD_F2, VEX_OPCODE_0F_38, &attributes);
+  emit_int16(0x68, (0xC0 | encode));
+}
+
 void Assembler::evpmovb2m(KRegister dst, XMMRegister src, int vector_len) {
   assert(VM_Version::supports_avx512vlbw(), "");
   assert(VM_Version::supports_avx512vl() || vector_len == Assembler::AVX_512bit, "");

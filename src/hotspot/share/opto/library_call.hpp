@@ -397,6 +397,7 @@ class LibraryCallKit : public GraphKit {
   bool inline_vector_extract();
   bool inline_vector_insert();
   bool inline_vector_compress_expand();
+  bool inline_vector_intersect();
   bool inline_index_vector();
   bool inline_index_partially_in_upper_range();
   bool inline_vector_select_from_two_vectors();

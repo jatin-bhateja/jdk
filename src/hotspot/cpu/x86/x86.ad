@@ -3553,6 +3553,17 @@ bool Matcher::match_rule_supported_vector(int opcode, int vlen, BasicType bt) {
         return false;
       }
       break;
+    case Op_VectorIntersect:
+      if (!VM_Version::supports_avx512_vp2intersect()) {
+        return false;
+      }
+      if (vlen < 2 || size_in_bits < 32) {
+        return false;
+      }
+      if (bt != T_INT && bt != T_LONG) {
+        return false;
+      }
+      break;
     case Op_CompressV:
     case Op_ExpandV:
       if (is_subword_type(bt) && !VM_Version::supports_avx512_vbmi2()) {
@@ -5206,7 +5217,25 @@ operand kReg()
 %{
   constraint(ALLOC_IN_RC(vectmask_reg));
   match(RegVectMask);
+  match(kReg_K6);
+  match(kReg_K7);
   format %{%}
+  interface(REG_INTER);
+%}
+
+operand kReg_K6()
+%{
+  constraint(ALLOC_IN_RC(vectmask_reg_K6));
+  match(RegVectMask);
+  format %{ "K6" %}
+  interface(REG_INTER);
+%}
+
+operand kReg_K7()
+%{
+  constraint(ALLOC_IN_RC(vectmask_reg_K7));
+  match(RegVectMask);
+  format %{ "K7" %}
   interface(REG_INTER);
 %}
 
@@ -24175,6 +24204,25 @@ instruct vcompress_mask_reg_evex(kReg dst, kReg mask, rRegL rtmp1, rRegL rtmp2, 
     assert(this->in(1)->bottom_type()->isa_pvectmask(), "");
     int mask_len = Matcher::vector_length(this);
     __ vector_mask_compress($dst$$KRegister, $mask$$KRegister, $rtmp1$$Register, $rtmp2$$Register, mask_len);
+  %}
+  ins_pipe( pipe_slow );
+%}
+
+// --------------------------------- Vector Intersect Operations ----------------------------------
+
+instruct vintersect_evex(kReg_K6 dst, vec src1, vec src2, kReg_K7 ktmp) %{
+  match(Set dst (VectorIntersect src1 src2));
+  effect(TEMP ktmp);
+  format %{ "vp2intersect $dst, $src1, $src2\t# vector intersect" %}
+  ins_encode %{
+    BasicType bt = Matcher::vector_element_basic_type(this, $src1);
+    int vlen_enc = vector_length_encoding(this, $src1);
+    if (bt == T_INT) {
+      __ evp2intersectd($dst$$KRegister, $src1$$XMMRegister, $src2$$XMMRegister, vlen_enc);
+    } else {
+      assert(bt == T_LONG, "");
+      __ evp2intersectq($dst$$KRegister, $src1$$XMMRegister, $src2$$XMMRegister, vlen_enc);
+    }
   %}
   ins_pipe( pipe_slow );
 %}

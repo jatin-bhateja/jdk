@@ -541,6 +541,24 @@ public abstract sealed class ByteVector extends AbstractVector<Byte>
         return r;
     }
 
+    static VectorMask<Byte> intersectHelper(Vector<Byte> v1, Vector<Byte> v2) {
+        ByteVector va = (ByteVector) v1;
+        ByteVector vb = (ByteVector) v2;
+        int vlen = va.length();
+        boolean[] bits = new boolean[vlen];
+        byte[] a = va.vec();
+        byte[] b = vb.vec();
+        for (int i = 0; i < vlen; i++) {
+            for (int j = 0; j < vlen; j++) {
+                if (a[i] == b[j]) {
+                    bits[i] = true;
+                    break;
+                }
+            }
+        }
+        return va.maskFactory(bits);
+    }
+
     static ByteVector selectFromTwoVectorHelper(Vector<Byte> indexes, Vector<Byte> src1, Vector<Byte> src2) {
         int vlen = indexes.length();
         byte[] res = new byte[vlen];
@@ -2574,6 +2592,25 @@ public abstract sealed class ByteVector extends AbstractVector<Byte>
                                                         (v1, m1) -> expandHelper(v1, m1));
     }
 
+    @Override
+    public abstract
+    VectorMask<Byte> intersect(Vector<Byte> v);
+
+    /*package-private*/
+    @ForceInline
+    final
+    <M extends VectorMask<Byte>>
+    M intersectTemplate(Class<M> maskType, Vector<Byte> v) {
+        ByteVector that = (ByteVector) v;
+        that.check(this);
+        return VectorSupport.intersectOp(getClass(), maskType, laneTypeOrdinal(),
+                                         length(), this, that,
+                                         (v1, v2) -> {
+                                             @SuppressWarnings("unchecked")
+                                             M result = (M) intersectHelper(v1, v2);
+                                             return result;
+                                         });
+    }
 
     /**
      * {@inheritDoc} <!--workaround-->

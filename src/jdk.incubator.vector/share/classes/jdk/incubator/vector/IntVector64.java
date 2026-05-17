@@ -504,6 +504,12 @@ final class IntVector64 extends IntVector {
 
     @Override
     @ForceInline
+    public IntMask64 intersect(Vector<Integer> v) {
+        return super.intersectTemplate(IntMask64.class, v);  // specialize
+    }
+
+    @Override
+    @ForceInline
     public IntVector64 selectFrom(Vector<Integer> v) {
         return (IntVector64)
             super.selectFromTemplate((IntVector64) v);  // specialize

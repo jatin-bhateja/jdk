@@ -522,6 +522,14 @@ final class $vectortype$ extends $abstractvectortype$ {
             super.expandTemplate($masktype$.class,
                                    ($masktype$) m);  // specialize
     }
+#if[BITWISE]
+
+    @Override
+    @ForceInline
+    public $masktype$ intersect(Vector<$Boxtype$> v) {
+        return super.intersectTemplate($masktype$.class, v);  // specialize
+    }
+#end[BITWISE]
 
     @Override
     @ForceInline

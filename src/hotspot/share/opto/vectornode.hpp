@@ -1141,6 +1141,16 @@ class ExpandVNode: public VectorNode {
   virtual int Opcode() const;
 };
 
+// Vector intersect: produces a mask where lane N is set if vec1[N] == vec2[K] for some K
+class VectorIntersectNode: public VectorNode {
+ public:
+  VectorIntersectNode(Node* vec1, Node* vec2, const TypeVect* vt) :
+      VectorNode(vec1, vec2, vt) {
+    init_class_id(Class_VectorIntersect);
+  }
+  virtual int Opcode() const;
+};
+
 //================================= M E M O R Y ===============================
 
 // Load Vector from memory

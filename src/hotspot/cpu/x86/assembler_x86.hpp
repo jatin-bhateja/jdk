@@ -3099,6 +3099,10 @@ private:
   void evpcmpw(KRegister kdst, KRegister mask, XMMRegister nds, Address src,
                int comparison, bool is_signed, int vector_len);
 
+  // Vector intersect
+  void evp2intersectd(KRegister kdst, XMMRegister nds, XMMRegister src, int vector_len);
+  void evp2intersectq(KRegister kdst, XMMRegister nds, XMMRegister src, int vector_len);
+
   void evpmovb2m(KRegister dst, XMMRegister src, int vector_len);
   void evpmovw2m(KRegister dst, XMMRegister src, int vector_len);
   void evpmovd2m(KRegister dst, XMMRegister src, int vector_len);

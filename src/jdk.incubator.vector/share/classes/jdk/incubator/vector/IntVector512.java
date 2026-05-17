@@ -504,6 +504,12 @@ final class IntVector512 extends IntVector {
 
     @Override
     @ForceInline
+    public IntMask512 intersect(Vector<Integer> v) {
+        return super.intersectTemplate(IntMask512.class, v);  // specialize
+    }
+
+    @Override
+    @ForceInline
     public IntVector512 selectFrom(Vector<Integer> v) {
         return (IntVector512)
             super.selectFromTemplate((IntVector512) v);  // specialize

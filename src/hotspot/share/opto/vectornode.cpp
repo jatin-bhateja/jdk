@@ -827,6 +827,7 @@ VectorNode* VectorNode::make(int vopc, Node* n1, Node* n2, const TypeVect* vt, b
   case Op_ExpandV: return new ExpandVNode(n1, n2, vt);
   case Op_CompressV: return new CompressVNode(n1, n2, vt);
   case Op_CompressM: assert(n1 == nullptr, ""); return new CompressMNode(n2, vt);
+  case Op_VectorIntersect: return new VectorIntersectNode(n1, n2, vt);
   case Op_CompressBitsV: return new CompressBitsVNode(n1, n2, vt);
   case Op_ExpandBitsV: return new ExpandBitsVNode(n1, n2, vt);
   case Op_CountLeadingZerosV: return new CountLeadingZerosVNode(n1, vt);

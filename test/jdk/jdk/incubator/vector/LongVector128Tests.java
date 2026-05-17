@@ -309,6 +309,34 @@ public class LongVector128Tests extends AbstractVectorTest {
         }
     }
 
+    static void assertIntersectArraysEquals(boolean[] r, long[] a, long[] b, int vector_len) {
+        int i = 0, j = 0;
+        try {
+            for (; i < a.length; i += vector_len) {
+                for (j = 0; j < vector_len; j++) {
+                    boolean expected = false;
+                    for (int k = 0; k < vector_len; k++) {
+                        if (a[i + j] == b[i + k]) {
+                            expected = true;
+                            break;
+                        }
+                    }
+                    assertEquals(r[i + j], expected);
+                }
+            }
+        } catch (AssertionError e) {
+            int idx = i + j;
+            boolean expected = false;
+            for (int k = 0; k < vector_len; k++) {
+                if (a[i + j] == b[i + k]) {
+                    expected = true;
+                    break;
+                }
+            }
+            assertEquals(r[idx], expected, "at index #" + idx + ", a=" + a[idx] + ", expected=" + expected);
+        }
+    }
+
     static void assertSelectFromTwoVectorEquals(long[] r, long[] order, long[] a, long[] b, int vector_len) {
         int i = 0, j = 0;
         boolean is_exceptional_idx = false;
@@ -5674,6 +5702,24 @@ public class LongVector128Tests extends AbstractVectorTest {
         }
 
         assertexpandArraysEquals(r, a, mask, SPECIES.length());
+    }
+
+    @Test(dataProvider = "longBinaryOpProvider")
+    static void intersectLongVector128Tests(IntFunction<long[]> fa, IntFunction<long[]> fb) {
+        long[] a = fa.apply(SPECIES.length());
+        long[] b = fb.apply(SPECIES.length());
+        boolean[] r = new boolean[a.length];
+
+        for (int ic = 0; ic < INVOC_COUNT; ic++) {
+            for (int i = 0; i < a.length; i += SPECIES.length()) {
+                LongVector av = LongVector.fromArray(SPECIES, a, i);
+                LongVector bv = LongVector.fromArray(SPECIES, b, i);
+                boolean[] maskArray = av.intersect(bv).toArray();
+                System.arraycopy(maskArray, 0, r, i, SPECIES.length());
+            }
+        }
+
+        assertIntersectArraysEquals(r, a, b, SPECIES.length());
     }
 
     @Test(dataProvider = "longUnaryOpProvider")

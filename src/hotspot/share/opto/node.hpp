@@ -204,6 +204,7 @@ class MulVLNode;
 class ExpandVNode;
 class CompressVNode;
 class CompressMNode;
+class VectorIntersectNode;
 class C2_MacroAssembler;
 
 
@@ -763,6 +764,7 @@ public:
         DEFINE_CLASS_ID(NegV, Vector, 8)
         DEFINE_CLASS_ID(SaturatingVector, Vector, 9)
         DEFINE_CLASS_ID(MulVL, Vector, 10)
+        DEFINE_CLASS_ID(VectorIntersect, Vector, 11)
       DEFINE_CLASS_ID(Con, Type, 8)
           DEFINE_CLASS_ID(ConI, Con, 0)
       DEFINE_CLASS_ID(SafePointScalarMerge, Type, 9)
@@ -1037,6 +1039,7 @@ public:
   DEFINE_CLASS_QUERY(CompressV)
   DEFINE_CLASS_QUERY(ExpandV)
   DEFINE_CLASS_QUERY(CompressM)
+  DEFINE_CLASS_QUERY(VectorIntersect)
   DEFINE_CLASS_QUERY(LoadVector)
   DEFINE_CLASS_QUERY(LoadVectorGather)
   DEFINE_CLASS_QUERY(LoadVectorMasked)

@@ -101,6 +101,8 @@ class VectorSupport : AllStatic {
     VECTOR_OP_COMPRESS_BITS = 33,
     VECTOR_OP_EXPAND_BITS = 34,
 
+    VECTOR_OP_INTERSECT = 35,
+
     VECTOR_OP_TAN   = 101,
     VECTOR_OP_TANH  = 102,
     VECTOR_OP_SIN   = 103,

@@ -3510,6 +3510,31 @@ public abstract sealed class Vector<E> extends jdk.internal.vm.vector.VectorSupp
     public abstract Vector<E> expand(VectorMask<E> m);
 
     /**
+     * Computes the set intersection of lane elements between this vector
+     * and a second input vector.
+     *
+     * This is a cross-lane operation that compares every lane element
+     * of this vector against every lane element of the second input
+     * vector {@code v}.
+     *
+     * <p>The returned mask has lane {@code N} set if and only if
+     * the value at lane {@code N} of this vector is equal to the
+     * value at some lane of the second input vector {@code v}.
+     *
+     * <p>This method is applicable only to integral element types
+     * ({@code byte}, {@code short}, {@code int} and {@code long}).
+     *
+     * @param v the second input vector
+     * @return a mask where lane {@code N} is set if {@code this.lane(N)}
+     *         is equal to any lane of {@code v}
+     * @throws UnsupportedOperationException if the element type is
+     *         {@code float} or {@code double}
+     */
+    public VectorMask<E> intersect(Vector<E> v) {
+        throw new UnsupportedOperationException("intersect not supported for " + elementType());
+    }
+
+    /**
      * Using index values stored in the lanes of this vector,
      * assemble values stored in second vector {@code v}.
      * The second vector thus serves as a table, whose

@@ -554,6 +554,26 @@ public abstract sealed class $abstractvectortype$ extends AbstractVector<$Boxtyp
         }
         return r;
     }
+#if[BITWISE]
+
+    static VectorMask<$Boxtype$> intersectHelper(Vector<$Boxtype$> v1, Vector<$Boxtype$> v2) {
+        $abstractvectortype$ va = ($abstractvectortype$) v1;
+        $abstractvectortype$ vb = ($abstractvectortype$) v2;
+        int vlen = va.length();
+        boolean[] bits = new boolean[vlen];
+        $type$[] a = va.vec();
+        $type$[] b = vb.vec();
+        for (int i = 0; i < vlen; i++) {
+            for (int j = 0; j < vlen; j++) {
+                if (a[i] == b[j]) {
+                    bits[i] = true;
+                    break;
+                }
+            }
+        }
+        return va.maskFactory(bits);
+    }
+#end[BITWISE]
 
     static $abstractvectortype$ selectFromTwoVectorHelper(Vector<$Boxtype$> indexes, Vector<$Boxtype$> src1, Vector<$Boxtype$> src2) {
         int vlen = indexes.length();
@@ -3019,6 +3039,27 @@ public abstract sealed class $abstractvectortype$ extends AbstractVector<$Boxtyp
                                                         (v1, m1) -> expandHelper(v1, m1));
     }
 
+#if[BITWISE]
+    @Override
+    public abstract
+    VectorMask<$Boxtype$> intersect(Vector<$Boxtype$> v);
+
+    /*package-private*/
+    @ForceInline
+    final
+    <M extends VectorMask<$Boxtype$>>
+    M intersectTemplate(Class<M> maskType, Vector<$Boxtype$> v) {
+        $abstractvectortype$ that = ($abstractvectortype$) v;
+        that.check(this);
+        return VectorSupport.intersectOp(getClass(), maskType, laneTypeOrdinal(),
+                                         length(), this, that,
+                                         (v1, v2) -> {
+                                             @SuppressWarnings("unchecked")
+                                             M result = (M) intersectHelper(v1, v2);
+                                             return result;
+                                         });
+    }
+#end[BITWISE]
 
     /**
      * {@inheritDoc} <!--workaround-->

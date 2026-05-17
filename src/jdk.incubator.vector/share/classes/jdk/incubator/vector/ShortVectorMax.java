@@ -504,6 +504,12 @@ final class ShortVectorMax extends ShortVector {
 
     @Override
     @ForceInline
+    public ShortMaskMax intersect(Vector<Short> v) {
+        return super.intersectTemplate(ShortMaskMax.class, v);  // specialize
+    }
+
+    @Override
+    @ForceInline
     public ShortVectorMax selectFrom(Vector<Short> v) {
         return (ShortVectorMax)
             super.selectFromTemplate((ShortVectorMax) v);  // specialize

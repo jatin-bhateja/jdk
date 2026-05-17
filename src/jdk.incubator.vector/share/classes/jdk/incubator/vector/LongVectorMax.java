@@ -495,6 +495,12 @@ final class LongVectorMax extends LongVector {
 
     @Override
     @ForceInline
+    public LongMaskMax intersect(Vector<Long> v) {
+        return super.intersectTemplate(LongMaskMax.class, v);  // specialize
+    }
+
+    @Override
+    @ForceInline
     public LongVectorMax selectFrom(Vector<Long> v) {
         return (LongVectorMax)
             super.selectFromTemplate((LongVectorMax) v);  // specialize

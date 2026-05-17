@@ -504,6 +504,12 @@ final class ShortVector512 extends ShortVector {
 
     @Override
     @ForceInline
+    public ShortMask512 intersect(Vector<Short> v) {
+        return super.intersectTemplate(ShortMask512.class, v);  // specialize
+    }
+
+    @Override
+    @ForceInline
     public ShortVector512 selectFrom(Vector<Short> v) {
         return (ShortVector512)
             super.selectFromTemplate((ShortVector512) v);  // specialize

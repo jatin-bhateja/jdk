@@ -504,6 +504,12 @@ final class ByteVectorMax extends ByteVector {
 
     @Override
     @ForceInline
+    public ByteMaskMax intersect(Vector<Byte> v) {
+        return super.intersectTemplate(ByteMaskMax.class, v);  // specialize
+    }
+
+    @Override
+    @ForceInline
     public ByteVectorMax selectFrom(Vector<Byte> v) {
         return (ByteVectorMax)
             super.selectFromTemplate((ByteVectorMax) v);  // specialize
